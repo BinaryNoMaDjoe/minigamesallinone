@@ -3,6 +3,7 @@ import { gameRegistry } from '../../games/registry'
 import { scoreService } from '../../services/score'
 import { pickLang, useI18n } from '../../i18n'
 import { TrophyIcon } from './icons'
+import { useReveal } from './useReveal'
 
 // ============================================================
 // 排行榜规范：design-language.md §8.5
@@ -17,6 +18,7 @@ interface LeaderboardProps {
 
 export function Leaderboard({ refreshKey = 0 }: LeaderboardProps) {
   const { lang, t } = useI18n()
+  const revealRef = useReveal<HTMLDivElement>()
 
   const rows = useMemo(() => {
     // refreshKey 本身不参与计算，仅作为"游戏窗口关闭后重读本地数据"的触发器
@@ -32,7 +34,7 @@ export function Leaderboard({ refreshKey = 0 }: LeaderboardProps) {
   }, [refreshKey, lang])
 
   return (
-    <div className="comic-border bg-surface comic-shadow p-1">
+    <div ref={revealRef} className="comic-border bg-surface comic-shadow p-1">
       {/* 表头 */}
       <div className="bg-primary text-on-primary p-4 border-b-4 border-ink flex items-center justify-between">
         <h2 className="font-headline-md text-headline-md uppercase italic">

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { CSSProperties, KeyboardEvent } from 'react'
 import type { GameEntry } from '../../games/registry'
 import type { GameInstance } from '../../games/shared/types'
 import { scoreService } from '../../services/score'
@@ -37,6 +37,7 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
   const [paused, setPaused] = useState(false)
   const [showHowTo, setShowHowTo] = useState(false)
   const [initialBest] = useState(() => scoreService.best(manifest.id))
+  const gameRatio = manifest.aspect.width / manifest.aspect.height
 
   const handleScore = useCallback((value: number) => setScore(value), [])
 
@@ -119,7 +120,7 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] game-overlay flex items-center justify-center p-4"
+      className="fixed inset-0 z-[60] game-overlay flex items-center justify-center p-2 sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) handleClose()
       }}
@@ -131,7 +132,13 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
         aria-label={pickLang(manifest.name, lang)}
         onKeyDown={trapFocus}
         className="relative comic-border bg-surface comic-shadow w-full overflow-hidden"
-        style={{ maxWidth: 'min(92vw, 860px)' }}
+        style={
+          {
+            '--game-ratio': gameRatio,
+            // §4.3 横竖屏硬约束：窗口高（标题栏+游戏区+控制条 ≈ 170px）不超出 92vh
+            maxWidth: 'min(92vw, 860px, calc((92vh - 170px) * var(--game-ratio)))',
+          } as CSSProperties
+        }
       >
         {/* 标题栏：红底白字（同排行榜表头样式，§15） */}
         <div className="bg-primary text-on-primary border-b-4 border-ink flex items-center justify-between gap-2 p-3">

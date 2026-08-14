@@ -3,6 +3,7 @@ import type { GameCategory } from '../../games/shared/types'
 import { pickLang, useI18n } from '../../i18n'
 import type { MessageKey } from '../../i18n'
 import { Button } from './Button'
+import { useReveal } from './useReveal'
 
 // ============================================================
 // 卡片规范：design-language.md §8.2（Pop-out Card）
@@ -20,14 +21,20 @@ const categoryKey: Record<GameCategory, MessageKey> = {
 interface GameCardProps {
   entry: GameEntry
   onPlay: (gameId: string) => void
+  /** 滚动入场级联延迟（§9 生长 v0.3） */
+  revealDelay?: number
 }
 
-export function GameCard({ entry, onPlay }: GameCardProps) {
+export function GameCard({ entry, onPlay, revealDelay = 0 }: GameCardProps) {
   const { lang, t } = useI18n()
   const { manifest } = entry
+  const revealRef = useReveal<HTMLElement>(revealDelay)
 
   return (
-    <article className="relative comic-border bg-surface comic-shadow group hover:-translate-y-2 transition-transform duration-300">
+    <article
+      ref={revealRef}
+      className="relative comic-border bg-surface comic-shadow group hover:-translate-y-2 transition-transform duration-300"
+    >
       {/* 图区（占位：半调网点 + 游戏名首字；封面美术由游戏级规范产出后替换） */}
       <div className="h-40 overflow-hidden relative bg-surface-container-high halftone-bg border-4 border-ink border-t-0 border-l-0 border-r-0">
         <div className="absolute inset-0 flex items-center justify-center">

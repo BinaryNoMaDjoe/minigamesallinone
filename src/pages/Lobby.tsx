@@ -7,6 +7,7 @@ import { GameWindow } from '../components/ui/GameWindow'
 import { Leaderboard } from '../components/ui/Leaderboard'
 import { SpeechBubble } from '../components/ui/SpeechBubble'
 import { MoonIcon, SunIcon } from '../components/ui/icons'
+import { useReveal } from '../components/ui/useReveal'
 import { isDark, toggleTheme } from '../theme/theme'
 
 // ============================================================
@@ -43,6 +44,8 @@ export function Lobby() {
   const [activeGameId, setActiveGameId] = useState<string | null>(null)
   const [dark, setDark] = useState(isDark())
   const [scoresRefresh, setScoresRefresh] = useState(0)
+  const gamesHeaderRef = useReveal<HTMLDivElement>()
+  const footerRef = useReveal<HTMLDivElement>()
 
   const activeEntry = gameRegistry.find((entry) => entry.manifest.id === activeGameId) ?? null
 
@@ -73,9 +76,9 @@ export function Lobby() {
               variant="icon"
               aria-label="切换语言 / Switch language"
               onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
-              className="w-auto px-3 font-label-bold text-label-bold uppercase"
+              className="font-label-bold text-label-bold uppercase"
             >
-              {lang === 'zh' ? 'EN' : '中文'}
+              {lang === 'zh' ? 'EN' : '中'}
             </Button>
             <Button
               variant="icon"
@@ -84,7 +87,9 @@ export function Lobby() {
             >
               {dark ? <SunIcon /> : <MoonIcon />}
             </Button>
-            <Button onClick={scrollToGames}>{t('lobby.cta')}</Button>
+            <Button className="hidden sm:inline-flex" onClick={scrollToGames}>
+              {t('lobby.cta')}
+            </Button>
           </div>
         </div>
       </header>
@@ -108,7 +113,7 @@ export function Lobby() {
                 {t('lobby.bubble')}
               </SpeechBubble>
               <h1
-                className="font-display-lg text-display-lg uppercase italic text-on-surface"
+                className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg lg:font-display-lg lg:text-display-lg uppercase italic text-on-surface"
                 style={{ textShadow: '4px 4px 0 var(--shadow-red)' }}
               >
                 {t('lobby.heroTitleA')}
@@ -124,6 +129,22 @@ export function Lobby() {
               >
                 {t('lobby.cta')}
               </Button>
+
+              {/* 移动端单张倾斜面板（§4.3：md 以下隐藏多面板拼贴，改单张） */}
+              {heroPanels.length > 0 && (
+                <div className="md:hidden self-center mt-2 relative">
+                  <div className="rotate-3 comic-border bg-surface comic-shadow-red w-40 h-52 overflow-hidden">
+                    <div className="w-full h-full halftone-bg bg-surface-container-high flex items-center justify-center">
+                      <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
+                        {pickLang(heroPanels[0].manifest.name, lang).slice(0, 1)}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 w-full bg-primary text-on-primary border-t-4 border-ink p-2 font-headline-md text-headline-md text-center italic uppercase">
+                      {pickLang(heroPanels[0].manifest.name, lang)}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 面板拼贴（占位：注册表驱动的分镜面板，封面美术后续替换） */}
@@ -159,7 +180,7 @@ export function Lobby() {
           className="w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-20 grid grid-cols-1 lg:grid-cols-12 gap-gutter"
         >
           <div className="lg:col-span-8 flex flex-col gap-8">
-            <div className="flex items-center gap-4">
+            <div ref={gamesHeaderRef} className="flex items-center gap-4">
               <SpeechBubble className="-rotate-3 font-headline-lg text-headline-lg italic text-secondary">
                 {t('lobby.gamesBubble')}
               </SpeechBubble>
@@ -174,8 +195,13 @@ export function Lobby() {
               </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
-                {gameRegistry.map((entry) => (
-                  <GameCard key={entry.manifest.id} entry={entry} onPlay={setActiveGameId} />
+                {gameRegistry.map((entry, index) => (
+                  <GameCard
+                    key={entry.manifest.id}
+                    entry={entry}
+                    onPlay={setActiveGameId}
+                    revealDelay={index * 80}
+                  />
                 ))}
               </div>
             )}
@@ -190,7 +216,10 @@ export function Lobby() {
       {/* —— 页脚（§8.9）—— */}
       <footer className="bg-surface-container-highest border-t-4 border-ink">
         <div className="halftone-bg">
-          <div className="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-8 max-w-7xl mx-auto gap-6">
+          <div
+            ref={footerRef}
+            className="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-8 max-w-7xl mx-auto gap-6"
+          >
             <div className="text-center md:text-left">
               <div className="font-headline-md text-headline-md font-black text-on-surface uppercase italic tracking-tighter">
                 {t('common.appName')}
