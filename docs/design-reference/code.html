@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GAMEVERSE UNLEASHED - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:ital,wght@0,100..900;1,100..900&amp;family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#bf0016",
+                        "secondary-fixed-dim": "#aac7ff",
+                        "primary-container": "#e62429",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "tertiary-fixed-dim": "#e9c400",
+                        "tertiary-fixed": "#ffe16d",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#c9a900",
+                        "inverse-primary": "#ffb4ac",
+                        "on-tertiary-fixed": "#221b00",
+                        "secondary-container": "#0072e1",
+                        "error-container": "#ffdad6",
+                        "background": "#fcf9f8",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#313030",
+                        "on-surface": "#1c1b1b",
+                        "on-background": "#1c1b1b",
+                        "surface-container": "#f0edec",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e5e2e1",
+                        "surface-tint": "#c00016",
+                        "secondary": "#005ab4",
+                        "inverse-on-surface": "#f3f0ef",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary": "#705d00",
+                        "on-secondary-fixed-variant": "#00458d",
+                        "surface": "#fcf9f8",
+                        "on-primary-fixed-variant": "#93000e",
+                        "on-secondary-fixed": "#001b3e",
+                        "on-surface-variant": "#5d3f3c",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "on-primary-fixed": "#410003",
+                        "on-tertiary-container": "#4c3f00",
+                        "on-primary-container": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#e7bdb8",
+                        "surface-dim": "#dcd9d9",
+                        "outline": "#926f6b",
+                        "primary-fixed-dim": "#ffb4ac",
+                        "secondary-fixed": "#d6e3ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "20px",
+                        "stack-offset": "6px",
+                        "unit": "4px",
+                        "margin-desktop": "40px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Anybody"],
+                        "label-sm": ["Space Grotesk"],
+                        "headline-lg-mobile": ["Anybody"],
+                        "headline-md": ["Anybody"],
+                        "body-md": ["Hanken Grotesk"],
+                        "display-lg": ["Anybody"],
+                        "label-bold": ["Space Grotesk"],
+                        "body-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["40px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "36px", "fontWeight": "800" }],
+                        "headline-md": ["24px", { "lineHeight": "28px", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["72px", { "lineHeight": "68px", "letterSpacing": "-0.04em", "fontWeight": "900" }],
+                        "label-bold": ["14px", { "lineHeight": "16px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .halftone-bg {
+            background-image: radial-gradient(circle, #dcd9d9 2px, transparent 2.5px);
+            background-size: 10px 10px;
+        }
+        .speed-lines {
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                #e5e2e1 10px,
+                #e5e2e1 11px
+            );
+        }
+        .comic-border {
+            border: 4px solid #1c1b1b;
+        }
+        .comic-shadow {
+            box-shadow: 6px 6px 0px 0px rgba(28,27,27,1);
+        }
+        .comic-shadow-red {
+            box-shadow: 6px 6px 0px 0px rgba(191,0,22,1);
+        }
+        .comic-shadow-blue {
+            box-shadow: 6px 6px 0px 0px rgba(0,90,180,1);
+        }
+        .comic-bubble {
+            position: relative;
+            background: #ffffff;
+            border: 3px solid #1c1b1b;
+            padding: 8px 16px;
+            display: inline-block;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .comic-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0 0;
+            border-style: solid;
+            border-color: #1c1b1b transparent transparent transparent;
+        }
+        .comic-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 22px;
+            border-width: 8px 8px 0 0;
+            border-style: solid;
+            border-color: #ffffff transparent transparent transparent;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-inverse-surface docked full-width top-0 border-b-4 border-on-surface shadow-[6px_6px_0px_0px_rgba(191,0,22,1)] sticky z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-full mx-auto md:px-margin-desktop px-margin-mobile">
+<!-- Brand -->
+<a class="font-headline-lg text-headline-lg md:font-headline-lg md:text-headline-lg font-headline-lg-mobile text-headline-lg-mobile italic font-black text-primary uppercase tracking-tighter" href="#">
+                GAMEVERSE UNLEASHED
+            </a>
+<!-- Nav Links (Desktop) -->
+<nav class="hidden md:flex gap-8 items-center font-label-bold text-label-bold">
+<a class="text-on-surface dark:text-on-background hover:text-primary hover:skew-x-[-2deg] hover:scale-105 transition-transform duration-100 uppercase" href="#">ARCADE</a>
+<a class="text-on-surface dark:text-on-background hover:text-primary hover:skew-x-[-2deg] hover:scale-105 transition-transform duration-100 uppercase" href="#">HEROES</a>
+<a class="text-on-surface dark:text-on-background hover:text-primary hover:skew-x-[-2deg] hover:scale-105 transition-transform duration-100 uppercase" href="#">QUESTS</a>
+<a class="text-on-surface dark:text-on-background hover:text-primary hover:skew-x-[-2deg] hover:scale-105 transition-transform duration-100 uppercase" href="#">VAULT</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center justify-center w-10 h-10 comic-border bg-surface-container-highest hover:bg-surface-variant transition-colors comic-shadow active:translate-x-1 active:translate-y-1 active:shadow-none">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="bg-primary text-on-primary font-label-bold text-label-bold px-6 py-2 uppercase comic-border comic-shadow hover:skew-x-[-2deg] hover:scale-105 transition-transform duration-100 active:translate-x-1 active:translate-y-1 active:shadow-none">
+                    JOIN SQUAD
+                </button>
+<button class="md:hidden flex items-center justify-center w-10 h-10 comic-border bg-surface-container-highest">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow">
+<!-- Hero Section (Splash Page Layout) -->
+<section class="relative w-full min-h-[80vh] flex items-center justify-center overflow-hidden border-b-4 border-on-surface px-margin-mobile md:px-margin-desktop py-12">
+<!-- Background Elements -->
+<div class="absolute inset-0 speed-lines opacity-50 z-0"></div>
+<div class="absolute -right-20 -top-20 w-96 h-96 bg-primary rounded-full blur-3xl opacity-20 z-0"></div>
+<div class="absolute -left-20 bottom-0 w-80 h-80 bg-secondary rounded-full blur-3xl opacity-20 z-0"></div>
+<div class="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-gutter items-center">
+<!-- Hero Text -->
+<div class="md:col-span-5 flex flex-col items-start gap-6">
+<div class="comic-bubble transform -rotate-2 mb-4 font-label-bold text-label-bold text-primary">
+                        WARNING: HIGH VOLTAGE
+                    </div>
+<h1 class="font-display-lg text-display-lg uppercase italic text-on-surface drop-shadow-[4px_4px_0_rgba(191,0,22,1)]">
+                        ENTER THE<br/>
+<span class="text-primary">MULTIVERSE</span><br/>
+                        OF FUN
+                    </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md border-l-4 border-primary pl-4 py-2 bg-surface-container-low">
+                        Unlock epic quests, battle legendary heroes, and dominate the arcade. The next level of gaming starts here.
+                    </p>
+<button class="mt-4 bg-primary text-on-primary font-headline-md text-headline-md px-10 py-4 uppercase comic-border comic-shadow hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_rgba(28,27,27,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                        PLAY NOW
+                    </button>
+</div>
+<!-- Hero Image Montage (Slanted Panels) -->
+<div class="md:col-span-7 relative h-[600px] w-full mt-12 md:mt-0 perspective-1000">
+<!-- Panel 1 (Background Left) -->
+<div class="absolute top-10 left-0 w-64 h-96 comic-border bg-surface transform -rotate-12 hover:rotate-0 transition-transform duration-500 comic-shadow z-10 overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-700" data-alt="A dynamic, high-contrast comic book style illustration of a futuristic racing game, neon colors, heavy ink outlines, speed lines, dramatic angle, high energy." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDecK14XG_mK9XMUk6hVw3xGKZeROIGrOtFXC-z8AqNpxFNX5eo79-X8WlR96sgGlbaD8kCDEokj5ja25Il-2nfzoqPBdlHJ03kRCBBFSSfy9k5NYhMgxH7gKFwZmh97Gj3_COQQimyfWVoKvfaD7TRMymN4ZbsnIsCd8oI7hBOZDk5OrAWQngDnHxOLOvATqZNjLKIu_KVp_CHJ7bIpwJw_t56WOmPhhM7hD_g6axR3OkPAFZml8cwHw')"></div>
+<div class="absolute bottom-0 w-full bg-surface comic-border border-t-4 border-b-0 border-l-0 border-r-0 p-2 font-headline-md text-headline-md text-center italic uppercase">
+                            NITRO DRIFT
+                        </div>
+</div>
+<!-- Panel 2 (Foreground Center) -->
+<div class="absolute top-0 left-1/4 w-80 h-[450px] comic-border bg-surface transform rotate-6 hover:-translate-y-4 transition-transform duration-500 comic-shadow-red z-30 overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-700" data-alt="A premium graphic novel cover style illustration of a cybernetic warrior holding a glowing sword, intense red and dark metallic tones, heavy shadows, dynamic action pose, highly detailed." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBs6CcTY_IgoHydKq_JSM8hrsZN-5jxdstTeYJBZZfsx82C1DE6fLnPhC4nVkAuBSoC3rJXSgD3BV9Cx0AZEbdKJxeIIPGD-SPQhawSlnK_f5tMzBJSDKf8Wxm-tmzSo5EWM7hwnhvveepk8ljMD36XoPbMf3agf9z1t8tyWOQ4POcrpWUqZikX-Iyfh2DEIh2qmQN2C8-07ESQnt0MShnRVccHqgi3x3-a1rgTBEzGLu2kWQ-1VJYWGA')"></div>
+<div class="absolute bottom-0 w-full bg-primary text-on-primary comic-border border-t-4 border-b-0 border-l-0 border-r-0 p-3 font-headline-lg text-headline-lg text-center italic uppercase">
+                            CYBER BLADE
+                        </div>
+</div>
+<!-- Panel 3 (Background Right) -->
+<div class="absolute top-20 right-0 w-64 h-96 comic-border bg-surface transform rotate-12 hover:rotate-0 transition-transform duration-500 comic-shadow z-20 overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-700" data-alt="A stylized comic panel showing a retro space shooter game, pixel art meets graphic novel, laser beams, alien ships, vibrant colors, explosive action." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuASaUGWpxAm3HVDlPW8sQd3EoQ4yfruK_M1KbboqJRKm77SgJzMaLTIlXFdYEdEZTvOE3joXmFZTxZhRiqBeu6NhdkuU1-UYc7T57Kb3-VcwyOh7xbpLFeHbIZgc1opF7uL-jPwu8L-fJgghDL2574EStNySeXUssEWir-67HOz90vP0jJKnrNPSAPfkYqIS3C416Ku7mR2q4UIoZxAvP8G3itsEeLrCcy5UFTMl0qBrFC3eU_Y-Mb0og')"></div>
+<div class="absolute bottom-0 w-full bg-surface comic-border border-t-4 border-b-0 border-l-0 border-r-0 p-2 font-headline-md text-headline-md text-center italic uppercase">
+                            STAR BLASTER
+                        </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content Area -->
+<section class="w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-20 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: MISSION SELECT (Grid) -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<div class="flex items-center gap-4">
+<div class="comic-bubble font-headline-lg text-headline-lg italic transform -rotate-3 text-secondary">
+                        NEW QUESTS!
+                    </div>
+<h2 class="font-headline-lg text-headline-lg uppercase italic border-b-4 border-on-surface flex-grow">
+                        MISSION SELECT
+                    </h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
+<!-- Category Card 1 -->
+<div class="relative comic-border bg-surface group hover:-translate-y-2 transition-transform duration-300 comic-shadow">
+<div class="h-48 overflow-hidden comic-border border-b-4 border-t-0 border-l-0 border-r-0">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500" data-alt="Comic book splash art of a classic arcade machine glowing in a dark room, neon synthwave aesthetic, heavy ink shadows, energetic atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAqcTpHYDIBQP4gEUu52dpvtKg5TxRHbRYZ-pKBtVCtwuLZwkJySMcDQ0CNI-XdPtXl8YlfqzhPzrRS7hjde1qVEBJLp8MdzvGO9Xo-kkchDMhaNEwf5-KKPrJs_qG4q0o19MCzHyLJzApkJ9YFl-spScWK4yGHWAEDP9dMwR8Ahq0Vi5Lmup_XpI_RQ_VDtL7bd2YJ7UOGCPpz1T7Q0t8IWtJSZ79fKdP6LfBDzzIKoG5dYQCi0dYVSg')"></div>
+</div>
+<div class="p-6 halftone-bg">
+<h3 class="font-headline-md text-headline-md uppercase italic mb-2">ARCADE BRAWLERS</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 bg-surface p-2 comic-border border-2">Button-mashing glory awaits. Fight to the top of the tower.</p>
+<button class="bg-surface text-on-surface font-label-bold text-label-bold px-4 py-2 uppercase comic-border comic-shadow-blue hover:bg-secondary hover:text-on-secondary transition-colors">
+                                EXPLORE <span class="material-symbols-outlined align-middle text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Decorative Tag -->
+<div class="absolute -top-3 -left-3 bg-tertiary text-on-tertiary comic-border px-2 py-1 font-label-bold text-label-bold uppercase transform -rotate-12">
+                            HOT
+                        </div>
+</div>
+<!-- Category Card 2 -->
+<div class="relative comic-border bg-surface group hover:-translate-y-2 transition-transform duration-300 comic-shadow">
+<div class="h-48 overflow-hidden comic-border border-b-4 border-t-0 border-l-0 border-r-0">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500" data-alt="Epic high-fantasy comic illustration of a sprawling medieval city, dragons flying in the background, bold line work, rich dramatic lighting, graphic novel style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC8X5Ogjq2f8Lqkz9EPsEuH7muErrIUL-HxaA92jqIhMixpfqwrfx0uT3d36bShp5vgklAYQoSyN175E7j8UgXbwb65k8PT5F0tpCygoQvyzwKz2cya4fIj-5jtdFTQhTAssY7W2fRRrByA_feIF0qXw6DsHqGeyE0ZdTZpmhyGLZcLSikRxI7aqWRa51wYNVPY8ajdWWEJ2EeLcbQBzyPK_5zlHdIYGlCLENhh9Fjn922-x1ddeGx5xA')"></div>
+</div>
+<div class="p-6 halftone-bg">
+<h3 class="font-headline-md text-headline-md uppercase italic mb-2">EPIC RPGs</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 bg-surface p-2 comic-border border-2">Build your legend, gather your party, and conquer the realm.</p>
+<button class="bg-surface text-on-surface font-label-bold text-label-bold px-4 py-2 uppercase comic-border comic-shadow-blue hover:bg-secondary hover:text-on-secondary transition-colors">
+                                EXPLORE <span class="material-symbols-outlined align-middle text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Category Card 3 -->
+<div class="relative comic-border bg-surface group hover:-translate-y-2 transition-transform duration-300 comic-shadow sm:col-span-2">
+<div class="flex flex-col sm:flex-row h-full">
+<div class="sm:w-1/2 h-48 sm:h-auto overflow-hidden comic-border border-b-4 sm:border-b-0 sm:border-r-4 border-t-0 border-l-0">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-500" data-alt="Tactical map view of a sci-fi battlefield in a comic book style, holographic displays, heavy contrast, strategic planning, intense mood." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAHNWGw-aYaJJeU4Bo5zsOoASa9cwl4BacqEO02D5YUG66_famiMD2Mvew50aNdIdyB8qTwuPP0iE031Io_tQg9QKsnWXNqKFVn1LFA0oJw156iXi4FQXKw3mW7dj_2x9-faUoWhxHYnqU2GU8vn8YPyblGrPxiBeVHxsLHZFIVyCsxnYkEqaY33tFtpijZFq-5vOKyCxLg4bRcGnhZynU6rrAE_sstJSsVP2bMAzQasQ_W7mmmb1WjZQ')"></div>
+</div>
+<div class="sm:w-1/2 p-6 halftone-bg flex flex-col justify-center">
+<h3 class="font-headline-md text-headline-md uppercase italic mb-2">TACTICAL COMMAND</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 bg-surface p-2 comic-border border-2">Outsmart your enemies. Strategy is your greatest weapon.</p>
+<div class="mt-auto">
+<button class="bg-surface text-on-surface font-label-bold text-label-bold px-4 py-2 uppercase comic-border comic-shadow-blue hover:bg-secondary hover:text-on-secondary transition-colors">
+                                        EXPLORE <span class="material-symbols-outlined align-middle text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: LEADERBOARD (Sidebar) -->
+<div class="lg:col-span-4 mt-12 lg:mt-0">
+<div class="comic-border bg-surface comic-shadow p-1 h-full flex flex-col">
+<!-- Leaderboard Header -->
+<div class="bg-primary text-on-primary p-4 comic-border border-b-4 border-t-0 border-l-0 border-r-0 flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md uppercase italic">TOP 10 HEROES</h2>
+<span class="material-symbols-outlined text-[32px]" data-icon="military_tech">military_tech</span>
+</div>
+<!-- Leaderboard List -->
+<div class="flex-grow p-4 bg-surface-container-low halftone-bg flex flex-col gap-3 overflow-hidden relative">
+<!-- Decorative element behind list -->
+<div class="absolute -right-10 top-20 text-[150px] font-display-lg text-surface-dim opacity-20 italic pointer-events-none select-none">
+                            #1
+                        </div>
+<!-- Item 1 (Highlighted) -->
+<div class="bg-tertiary text-on-tertiary comic-border p-3 flex items-center justify-between comic-shadow-red transform -translate-y-1 relative z-10">
+<div class="flex items-center gap-3">
+<div class="font-headline-md text-headline-md italic w-8 text-center">1</div>
+<div class="w-10 h-10 comic-border bg-surface overflow-hidden rounded-full">
+<img class="w-full h-full object-cover" data-alt="Avatar portrait of a fierce gaming character, heavy ink outlines, red background, intense expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwRtH7JzHCRw1gTIiNT8R5m8jgdZV8q4utc8RGcaHcJqWNCgBGkzrcq14xD28MLzBQlnbhTY9Ck8xF0YcbYnJ-FqA2iH8aqnfi0vqEsFeB54GSr3lll7WLGFbr82wPO4LR8Iw968WEwG-P8jQuSwfJOHqxET-fh9ekov7HSPHs7S4VoAmR9ZnqSafdMCZYK7uPvRAflR2fNC-4m6PrgKU2HXgKqOgpogvfqx_ipQBhiDUOhgmiGnNXjg"/>
+</div>
+<div class="font-label-bold text-label-bold uppercase tracking-wide">SHADOW_NINJA</div>
+</div>
+<div class="font-headline-md text-headline-md">9,999</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface comic-border p-2 flex items-center justify-between hover:bg-surface-variant transition-colors z-10">
+<div class="flex items-center gap-3">
+<div class="font-headline-md text-headline-md italic w-8 text-center text-surface-variant">2</div>
+<div class="font-label-bold text-label-bold uppercase">LASER_BEAM</div>
+</div>
+<div class="font-label-bold text-label-bold">8,450</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface comic-border p-2 flex items-center justify-between hover:bg-surface-variant transition-colors z-10">
+<div class="flex items-center gap-3">
+<div class="font-headline-md text-headline-md italic w-8 text-center text-surface-variant">3</div>
+<div class="font-label-bold text-label-bold uppercase">MECHA_KING</div>
+</div>
+<div class="font-label-bold text-label-bold">8,100</div>
+</div>
+<!-- Item 4 -->
+<div class="bg-surface comic-border p-2 flex items-center justify-between hover:bg-surface-variant transition-colors z-10 opacity-90">
+<div class="flex items-center gap-3">
+<div class="font-body-lg text-body-lg italic w-8 text-center text-surface-variant">4</div>
+<div class="font-body-md text-body-md uppercase">PIXEL_PUNK</div>
+</div>
+<div class="font-body-md text-body-md">7,600</div>
+</div>
+<!-- Item 5 -->
+<div class="bg-surface comic-border p-2 flex items-center justify-between hover:bg-surface-variant transition-colors z-10 opacity-80">
+<div class="flex items-center gap-3">
+<div class="font-body-lg text-body-lg italic w-8 text-center text-surface-variant">5</div>
+<div class="font-body-md text-body-md uppercase">STAR_DUST</div>
+</div>
+<div class="font-body-md text-body-md">7,220</div>
+</div>
+<div class="mt-auto pt-4 text-center">
+<button class="font-label-bold text-label-bold uppercase text-primary hover:underline flex items-center justify-center gap-1 mx-auto">
+                                FULL RANKINGS <span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-highest dark:bg-inverse-surface w-full border-t-4 border-on-surface mt-10">
+<div class="bg-[url('placeholder')] bg-repeat" data-alt="A subtle halftone dot pattern background texture for a comic book style footer, light gray dots on lighter background, graphic design element.">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop py-8 max-w-7xl mx-auto gap-8">
+<!-- Brand -->
+<div class="font-headline-md text-headline-md font-black text-on-surface uppercase italic tracking-tighter text-center md:text-left">
+                    GAMEVERSE<br/>UNLEASHED
+                </div>
+<!-- Links -->
+<nav class="flex flex-wrap justify-center gap-6 font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant">
+<a class="hover:text-primary transition-colors hover:skew-x-[-2deg] inline-block" href="#">PRIVACY POLICY</a>
+<a class="hover:text-primary transition-colors hover:skew-x-[-2deg] inline-block" href="#">CODE OF CONDUCT</a>
+<a class="hover:text-primary transition-colors hover:skew-x-[-2deg] inline-block" href="#">SUPPORT</a>
+<a class="hover:text-primary transition-colors hover:skew-x-[-2deg] inline-block" href="#">ADVERTISE</a>
+</nav>
+<!-- Copyright -->
+<div class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant text-center md:text-right max-w-xs">
+                    © 2024 GAMEVERSE COMICS GROUP. ALL RIGHTS RESERVED. PRINTED IN DIGITAL SPACE.
+                </div>
+</div>
+</div>
+</footer>
+</body></html>
