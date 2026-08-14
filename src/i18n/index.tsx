@@ -38,6 +38,9 @@ export const zh = {
   'shell.close': '关闭',
   'shell.howto': '玩法说明',
   'shell.loading': '加载中…',
+  // 欢迎页
+  'welcome.page': '欢迎页',
+  'welcome.enter': '进入',
   // 页脚
   'footer.copyright': '© 2026 BinaryNomad.io · 开发者 @BinaryNomadjoe',
   'footer.license': '仅用于学习研究，禁止商用与传播',
@@ -72,6 +75,8 @@ export const en: Record<MessageKey, string> = {
   'shell.close': 'CLOSE',
   'shell.howto': 'HOW TO PLAY',
   'shell.loading': 'LOADING…',
+  'welcome.page': 'Welcome',
+  'welcome.enter': 'ENTER',
   'footer.copyright': '© 2026 BinaryNomad.io · by @BinaryNomadjoe',
   'footer.license': 'For study and research only. No commercial use or redistribution.',
 }
