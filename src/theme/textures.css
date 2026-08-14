@@ -1,0 +1,84 @@
+/* ============================================================
+ * 纹理与漫画语言配方
+ * 唯一出处：docs/design-language.md v0.2 附录 B + §2.5 转译规则
+ * 颜色全部令牌化（来自 tokens.css），亮暗主题自动切换
+ * ============================================================ */
+
+/* 半调网点（Ben-Day Dots）：§7.1 —— 网点色 --halftone-dot */
+.halftone-bg {
+  background-image: radial-gradient(circle, var(--halftone-dot) 2px, transparent 2.5px);
+  background-size: 10px 10px;
+}
+
+/* 速度线：§7.2 —— 线色 --speed-line */
+.speed-lines {
+  background: repeating-linear-gradient(45deg, transparent 0 10px, var(--speed-line) 10px 11px);
+}
+
+/* 墨线描边：§6 —— 描边粗细即纵深（卡片/弹窗 4px；按钮/输入框 2px） */
+.comic-border {
+  border: 4px solid var(--ink);
+}
+
+.comic-border-2 {
+  border: 2px solid var(--ink);
+}
+
+/* 硬阴影：§6 —— 100% 不透明纯色错位，禁用模糊阴影 */
+.comic-shadow {
+  box-shadow: 6px 6px 0 0 var(--ink-shadow);
+}
+
+.comic-shadow-red {
+  box-shadow: 6px 6px 0 0 var(--shadow-red);
+}
+
+.comic-shadow-blue {
+  box-shadow: 6px 6px 0 0 var(--shadow-blue);
+}
+
+/* 按压态：§6 —— 位移 1px 并移除阴影，模拟"按下去贴到纸上"。
+   以 Tailwind @utility active-press 实现（见 index.css，支持 active: 变体），
+   对应设计规范附录 B 的 .active-press 配方。 */
+
+/* 对话气泡：§8.7 —— 白底 3px 墨线 + 双三角叠出尖角尾巴 */
+.comic-bubble {
+  position: relative;
+  display: inline-block;
+  background: var(--bubble-bg);
+  border: 3px solid var(--ink);
+  padding: 8px 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.comic-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 20px;
+  border-width: 10px 10px 0 0;
+  border-style: solid;
+  border-color: var(--ink) transparent transparent transparent;
+}
+
+.comic-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 22px;
+  border-width: 8px 8px 0 0;
+  border-style: solid;
+  border-color: var(--bubble-bg) transparent transparent transparent;
+  z-index: 1;
+}
+
+/* 弹窗遮罩：design-language.md §15 —— 墨黑半透明 + 速度线纹理 */
+.game-overlay {
+  background-color: var(--overlay);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0 10px,
+    rgba(255, 255, 255, 0.05) 10px 11px
+  );
+}

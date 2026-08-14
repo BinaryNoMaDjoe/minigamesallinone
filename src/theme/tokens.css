@@ -1,0 +1,148 @@
+/* ============================================================
+ * 设计令牌（亮色 + 暗色两套）
+ * 唯一出处：docs/design-language.md v0.2
+ *   - 亮色值 = 附录 A；暗色值 = 附录 C（生长规则见 §2.5）
+ *   - 扩展令牌（--ink / --halftone-dot 等）= §2.5「暗色下的漫画语言转译」9 条规则
+ * 纪律：代码中禁止出现本文件之外的颜色字面量（AGENTS.md 红线 3）
+ * ============================================================ */
+
+:root {
+  /* —— 表面层级（纸白 → 墨板）—— */
+  --background: #fcf9f8;
+  --surface: #fcf9f8;
+  --surface-dim: #dcd9d9;
+  --surface-bright: #fcf9f8;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f6f3f2;
+  --surface-container: #f0edec;
+  --surface-container-high: #ebe7e7;
+  --surface-container-highest: #e5e2e1;
+  --surface-variant: #e5e2e1;
+  --surface-tint: #c00016;
+
+  /* —— 文字与描边 —— */
+  --on-surface: #1c1b1b;
+  --on-surface-variant: #5d3f3c;
+  --on-background: #1c1b1b;
+  --outline: #926f6b;
+  --outline-variant: #e7bdb8;
+
+  /* —— 主色（Action Red）—— */
+  --primary: #bf0016;
+  --on-primary: #ffffff;
+  --primary-container: #e62429;
+  --on-primary-container: #ffffff;
+  --primary-fixed: #ffdad6;
+  --primary-fixed-dim: #ffb4ac;
+  --on-primary-fixed: #410003;
+  --on-primary-fixed-variant: #93000e;
+  --inverse-primary: #ffb4ac;
+
+  /* —— 次色（Power Blue）—— */
+  --secondary: #005ab4;
+  --on-secondary: #ffffff;
+  --secondary-container: #0072e1;
+  --on-secondary-container: #fefcff;
+  --secondary-fixed: #d6e3ff;
+  --secondary-fixed-dim: #aac7ff;
+  --on-secondary-fixed: #001b3e;
+  --on-secondary-fixed-variant: #00458d;
+
+  /* —— 强调（Hero Yellow）—— */
+  --tertiary: #705d00;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #c9a900;
+  --on-tertiary-container: #4c3f00;
+  --tertiary-fixed: #ffe16d;
+  --tertiary-fixed-dim: #e9c400;
+  --on-tertiary-fixed: #221b00;
+  --on-tertiary-fixed-variant: #544600;
+
+  /* —— 错误 —— */
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+
+  /* —— 反色 —— */
+  --inverse-surface: #313030;
+  --inverse-on-surface: #f3f0ef;
+
+  /* —— 漫画语言扩展令牌（design-language.md §2.5 转译规则）—— */
+  --ink: #1c1b1b; /* 墨线描边（暗色下白墨） */
+  --ink-shadow: #1c1b1b; /* 硬阴影（暗色下更深黑） */
+  --shadow-red: #bf0016; /* 彩色阴影：两主题品牌色不变 */
+  --shadow-blue: #005ab4;
+  --halftone-dot: #dcd9d9; /* 半调网点色 */
+  --speed-line: #e5e2e1; /* 速度线色 */
+  --bubble-bg: #ffffff; /* 气泡底色（暗色下墨板层级） */
+  --overlay: rgba(28, 27, 27, 0.6); /* 弹窗遮罩 */
+  --glow-opacity: 0.2; /* 氛围光晕 */
+}
+
+.dark {
+  --background: #141313;
+  --surface: #141313;
+  --surface-dim: #141313;
+  --surface-bright: #3a3939;
+  --surface-container-lowest: #0f0e0e;
+  --surface-container-low: #1c1b1b;
+  --surface-container: #201f1f;
+  --surface-container-high: #2a2929;
+  --surface-container-highest: #353434;
+  --surface-variant: #353434;
+  --surface-tint: #c00016;
+
+  --on-surface: #e5e2e1;
+  --on-surface-variant: #d8c2bf;
+  --on-background: #e5e2e1;
+  --outline: #a08c89;
+  --outline-variant: #534342;
+
+  --primary: #ffb4ac;
+  --on-primary: #410003;
+  --primary-container: #93000e;
+  --on-primary-container: #ffdad6;
+  --primary-fixed: #ffdad6;
+  --primary-fixed-dim: #ffb4ac;
+  --on-primary-fixed: #410003;
+  --on-primary-fixed-variant: #93000e;
+  --inverse-primary: #bf0016;
+
+  --secondary: #aac7ff;
+  --on-secondary: #001b3e;
+  --secondary-container: #00458d;
+  --on-secondary-container: #d6e3ff;
+  --secondary-fixed: #d6e3ff;
+  --secondary-fixed-dim: #aac7ff;
+  --on-secondary-fixed: #001b3e;
+  --on-secondary-fixed-variant: #00458d;
+
+  --tertiary: #e9c400;
+  --on-tertiary: #221b00;
+  --tertiary-container: #544600;
+  --on-tertiary-container: #ffe16d;
+  --tertiary-fixed: #ffe16d;
+  --tertiary-fixed-dim: #e9c400;
+  --on-tertiary-fixed: #221b00;
+  --on-tertiary-fixed-variant: #544600;
+
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+
+  --inverse-surface: #e5e2e1;
+  --inverse-on-surface: #313030;
+  --inverse-primary: #bf0016;
+
+  --ink: #e5e2e1; /* 白墨 */
+  --ink-shadow: #0f0e0e;
+  --shadow-red: #bf0016;
+  --shadow-blue: #005ab4;
+  --halftone-dot: #2a2929;
+  --speed-line: #201f1f;
+  --bubble-bg: #1c1b1b;
+  --overlay: rgba(0, 0, 0, 0.7);
+  --glow-opacity: 0.15;
+}
