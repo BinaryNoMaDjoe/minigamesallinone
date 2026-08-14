@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="MINIGAMES ALL IN ONE · minigamesallinone.binarynomad.io — 多小游戏合集。仅用于学习研究，禁止商用与传播。"
+    />
+    <title>MINIGAMES ALL IN ONE · BinaryNomad.io</title>
+    <script>
+      // 明暗主题初始化：默认跟随系统 + 手动覆盖（决策记录 #10；design-language.md §2.4）
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('mgaio:theme')
+          var dark =
+            stored === 'dark' ||
+            (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+        } catch (e) {
+          /* localStorage 不可用时不阻塞渲染 */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
