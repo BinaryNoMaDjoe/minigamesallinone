@@ -1,7 +1,9 @@
 # 流程规范（Process）
 
-> **版本**：v0.1
-> **变更记录**：v0.1 初稿（2026-08-15，初始化阶段，依据用户决议：commit 中文、拆分提交、杜绝幻觉、规范可生长）
+> **版本**：v0.2
+> **变更记录**：
+> - v0.1 初稿（2026-08-15，依据用户决议：commit 中文、拆分提交、杜绝幻觉、规范可生长）
+> - v0.2 生长（2026-08-15，用户指令）：新增决策 #15 pnpm、#16 CI/自动部署默认禁止、#17 版权声明；commit scope 增加 `license`
 > **性质**：强制规范。修订走生长流程（见 `evolution.md` 与本目录下文档自身的变更记录）。
 
 ## 1. 核心纪律（反幻觉）
@@ -26,7 +28,7 @@
 - 格式：**Conventional Commits**，描述用**中文**：
   `type(scope): 中文描述`
 - `type`：`feat` `fix` `docs` `chore` `refactor` `style` `perf`
-- `scope`（本仓库约定）：`design` `process` `architecture` `agents` `scaffold` `theme` `ui` `i18n` `games` `services` `deps`
+- `scope`（本仓库约定）：`design` `process` `architecture` `agents` `scaffold` `theme` `ui` `i18n` `games` `services` `deps` `license`
 - **拆分原则**：一次提交只做一类事——文档与代码分开、不同游戏分开、规范修订与实施分开
 - 示例：
   - `docs(design): 美术设计语言规范 v0.2 与溯源素材`
@@ -39,13 +41,13 @@
 
 - `husky + lint-staged`：提交前自动跑 ESLint + Prettier（脚手架阶段落地，落地前手动执行等效命令）
 - TypeScript 严格模式：`typecheck` + `build` 通过才可提交
-- 首版**不做**自动化测试与 CI（决策记录 #12）；需要时按生长流程引入
+- 首版**不做**自动化测试（决策记录 #12）；**CI 与自动部署默认禁止**，仅在用户明确人工命令时才能搭建/执行（决策记录 #16）
 - 代码审查：提交前按 `skills/skill-code-review.md` 自检；结构性变更（壳层、令牌、接口）建议开 `reviewer` 代理互审
 
 ## 5. 版本与发布
 
 - 产品版本 SemVer，首版 `v0.1.0`
-- 发布 = `build` 产物（纯静态），Changelog 由规范化 commit 自动生成
+- 发布 = `build` 产物（纯静态），Changelog 由规范化 commit 自动生成；**发布与部署动作默认禁止，必须由用户人工命令发起**（决策记录 #16）
 - 文档版本独立于产品版本：`v主.次`（次 = 生长次数），重大推翻升主版本
 - 每个规范文档文首必须有：版本号 + 变更记录（版本 | 日期 | 摘要 | 触发来源）
 
@@ -85,12 +87,14 @@
 | 12 | 测试/CI | 首版不做，需要时按生长流程引入 | ✅（默认未反对） |
 | 13 | Commit 语言与粒度 | 中文描述、Conventional Commits、逻辑拆分提交 | ✅（用户确认） |
 | 14 | 反幻觉与生长 | 杜绝幻觉与意淫；规范在必要阶段生长/迭代 | ✅（用户确认） |
+| 15 | 包管理器 | pnpm（用户采纳推荐） | ✅（用户确认） |
+| 16 | CI/自动部署 | **默认禁止**；仅在用户明确人工命令时才能搭建/执行 | ✅（用户确认） |
+| 17 | 版权声明 | 开发者 @BinaryNomadjoe；所有权归 BinaryNomad.io；**仅用于学习研究，禁止商用与传播**（根目录 LICENSE） | ✅（用户确认） |
 
 **遗留待定**：
 
-1. 包管理器：pnpm（推荐）/ npm —— **搭骨架前必须定**
-2. 站名最终字标排法（主标 "MINIGAMES ALL IN ONE" / 副标 "BINARY NOMAD" 的大小写、拆行、配色）
-3. 游戏级视觉规范模板
+1. 站名最终字标排法（主标 "MINIGAMES ALL IN ONE" / 副标 "BINARY NOMAD" 的大小写、拆行、配色）
+2. 游戏级视觉规范模板
 
 ## 9. 回顾点（Review Checkpoints）
 
