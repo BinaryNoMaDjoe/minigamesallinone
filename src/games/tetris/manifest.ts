@@ -1,4 +1,5 @@
 import type { GameManifest } from '../shared/types'
+import cover from './cover.svg'
 
 // ============================================================
 // 俄罗斯方块（像素风）—— 首个正式游戏
@@ -26,6 +27,7 @@ const manifest: GameManifest = {
     zh: '键盘：←→ 移动，↓ 软降，↑/X 旋转，空格硬降，回车（结束态）重开。触屏：使用画面下方按钮。',
     en: 'Keyboard: ←→ move, ↓ soft drop, ↑/X rotate, Space hard drop, Enter restart (when game over). Touch: use the on-screen buttons.',
   },
+  cover,
 }
 
 export default manifest

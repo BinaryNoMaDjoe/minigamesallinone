@@ -27,4 +27,8 @@ export const tetrisStrings = {
   rotate: { zh: '旋转', en: 'ROTATE' } satisfies LocalizedText,
   hardDrop: { zh: '硬降', en: 'HARD DROP' } satisfies LocalizedText,
   pauseAction: { zh: '暂停', en: 'PAUSE' } satisfies LocalizedText,
+  hintMove: { zh: '←→ 移动', en: '←→ MOVE' } satisfies LocalizedText,
+  hintRotate: { zh: '↑ 旋转', en: '↑ ROTATE' } satisfies LocalizedText,
+  hintDrop: { zh: '空格 硬降', en: 'SPACE DROP' } satisfies LocalizedText,
+  hintPause: { zh: 'P 暂停', en: 'P PAUSE' } satisfies LocalizedText,
 }

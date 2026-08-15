@@ -69,23 +69,24 @@
 
 .tetris-panel h2 {
   margin: 0 0 4px;
-  font-family: var(--font-headline-md);
-  font-size: 24px;
-  font-weight: 800;
-  font-style: italic;
+  font-family: 'Press Start 2P', var(--font-headline-md);
+  font-size: 12px;
+  font-weight: 400;
   text-transform: uppercase;
   color: var(--on-surface);
+  line-height: 1.6;
 }
 
 .tetris-panel .row {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-family: var(--font-label-bold);
-  font-size: 13px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  font-weight: 400;
   text-transform: uppercase;
   color: var(--on-surface-variant);
+  line-height: 1.6;
 }
 
 .tetris-panel .row b {
@@ -93,21 +94,23 @@
 }
 
 .tetris-panel .hint {
-  font-family: var(--font-label-sm);
-  font-size: 11px;
+  font-family: 'Press Start 2P', var(--font-label-sm);
+  font-size: 8px;
   color: var(--on-surface-variant);
+  line-height: 1.6;
 }
 
 .tetris-btn {
-  font-family: var(--font-label-bold);
-  font-size: 14px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  font-weight: 400;
   text-transform: uppercase;
-  padding: 8px 12px;
+  padding: 10px 12px;
   cursor: pointer;
   color: var(--on-surface);
   background: var(--surface-container-highest);
   border: 2px solid var(--ink);
+  line-height: 1.6;
 }
 
 .tetris-btn.primary {

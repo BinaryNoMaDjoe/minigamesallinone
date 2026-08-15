@@ -22,9 +22,10 @@ const BOARD_X = 8
 const BOARD_Y = 64
 const W = 320
 const H = 448
-const NEXT_X = 200
-const NEXT_Y = 32
-const NEXT_CELL = 12
+/** 右侧信息面板（DESIGN.md v0.4 §3：填满画布空白区） */
+const PANEL_X = 176
+const PANEL_W = 136
+const PIXEL_FONT = '"Press Start 2P", monospace'
 
 export const TetrisGame: GameComponent = ({ onReady }) => {
   const { lang } = useI18n()
@@ -63,6 +64,16 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       ctx.globalAlpha = 1
     }
 
+    /** 像素信息框（DESIGN.md v0.4 §3） */
+    const drawBox = (x: number, y: number, w: number, h: number) => {
+      if (!ctx) return
+      ctx.fillStyle = PALETTE.board
+      ctx.fillRect(x, y, w, h)
+      ctx.strokeStyle = PALETTE.ink
+      ctx.lineWidth = 2
+      ctx.strokeRect(x + 1, y + 1, w - 2, h - 2)
+    }
+
     const drawNextPreview = () => {
       if (!ctx) return
       const type = engine.nextType
@@ -73,17 +84,14 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       const maxX = Math.max(...cells.map((c) => c.x))
       const minY = Math.min(...cells.map((c) => c.y))
       const maxY = Math.max(...cells.map((c) => c.y))
-      const pieceW = (maxX - minX + 1) * NEXT_CELL
-      const pieceH = (maxY - minY + 1) * NEXT_CELL
-      const ox = NEXT_X + Math.round((W - NEXT_X - pieceW) / 2)
-      const oy = NEXT_Y + Math.round((56 - pieceH) / 2)
+      const cell = 12
+      const pieceW = (maxX - minX + 1) * cell
+      const pieceH = (maxY - minY + 1) * cell
+      // NEXT 框：y 64..160，标签下方区域 y 86..156 内居中
+      const ox = PANEL_X + Math.round((PANEL_W - pieceW) / 2)
+      const oy = 86 + Math.round((70 - pieceH) / 2)
       cells.forEach(({ x, y }) =>
-        drawCell(
-          ox + (x - minX) * NEXT_CELL,
-          oy + (y - minY) * NEXT_CELL,
-          NEXT_CELL,
-          PIECE_COLORS[type],
-        ),
+        drawCell(ox + (x - minX) * cell, oy + (y - minY) * cell, cell, PIECE_COLORS[type]),
       )
     }
 
@@ -152,19 +160,36 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
         )
       }
 
-      // 状态文字与 NEXT 预览
+      // 顶部条：标题 + 分数
       ctx.textBaseline = 'top'
       ctx.textAlign = 'left'
       ctx.fillStyle = PALETTE.text
-      ctx.font = 'bold 12px "Space Grotesk", monospace'
-      ctx.fillText(t('score'), 16, 8)
-      ctx.fillText(t('level'), 16, 26)
-      ctx.fillText(t('lines'), 16, 44)
-      ctx.fillText(t('next'), NEXT_X, 8)
-      ctx.font = 'bold 16px "Space Grotesk", monospace'
-      ctx.fillText(String(engine.score), 78, 7)
-      ctx.fillText(String(engine.level), 78, 25)
-      ctx.fillText(String(engine.lines), 78, 43)
+      ctx.font = `12px ${PIXEL_FONT}`
+      ctx.fillText(t('title'), 16, 18)
+      ctx.font = `8px ${PIXEL_FONT}`
+      ctx.fillText(t('score'), PANEL_X, 14)
+      ctx.font = `10px ${PIXEL_FONT}`
+      ctx.fillText(String(engine.score), PANEL_X, 32)
+
+      // 右侧信息面板：NEXT / LEVEL / LINES / 键位提示（填满空白区）
+      drawBox(PANEL_X, 64, PANEL_W, 96)
+      drawBox(PANEL_X, 168, PANEL_W, 56)
+      drawBox(PANEL_X, 232, PANEL_W, 56)
+      drawBox(PANEL_X, 296, PANEL_W, 88)
+      ctx.fillStyle = PALETTE.text
+      ctx.font = `8px ${PIXEL_FONT}`
+      ctx.fillText(t('next'), PANEL_X + 10, 74)
+      ctx.fillText(t('level'), PANEL_X + 10, 178)
+      ctx.fillText(t('lines'), PANEL_X + 10, 242)
+      ctx.font = `10px ${PIXEL_FONT}`
+      ctx.fillText(String(engine.level), PANEL_X + 10, 198)
+      ctx.fillText(String(engine.lines), PANEL_X + 10, 262)
+      ctx.font = `8px ${PIXEL_FONT}`
+      ctx.fillStyle = PALETTE.text
+      ctx.fillText(t('hintMove'), PANEL_X + 10, 308)
+      ctx.fillText(t('hintRotate'), PANEL_X + 10, 326)
+      ctx.fillText(t('hintDrop'), PANEL_X + 10, 344)
+      ctx.fillText(t('hintPause'), PANEL_X + 10, 362)
       if (engine.phase !== 'menu') drawNextPreview()
     }
 

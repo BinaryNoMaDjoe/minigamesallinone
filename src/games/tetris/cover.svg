@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" shapeRendering="crispEdges" role="img" aria-label="Tetris cover">
+  <!-- 封面缩略图：像素风（决策 #26）；色板出处 tetris/DESIGN.md §4 -->
+  <rect x="0" y="0" width="96" height="64" fill="#0f0e0e"/>
+  <!-- 网格线（暗） -->
+  <g fill="#1c1b1b">
+    <rect x="0" y="16" width="96" height="2"/><rect x="0" y="32" width="96" height="2"/><rect x="0" y="48" width="96" height="2"/>
+    <rect x="16" y="0" width="2" height="64"/><rect x="32" y="0" width="2" height="64"/><rect x="48" y="0" width="2" height="64"/><rect x="64" y="0" width="2" height="64"/><rect x="80" y="0" width="2" height="64"/>
+  </g>
+  <!-- O 黄 -->
+  <g fill="#ffd700"><rect x="8" y="44" width="8" height="8"/><rect x="16" y="44" width="8" height="8"/><rect x="8" y="52" width="8" height="8"/><rect x="16" y="52" width="8" height="8"/></g>
+  <!-- Z 红 -->
+  <g fill="#e62429"><rect x="24" y="44" width="8" height="8"/><rect x="32" y="44" width="8" height="8"/><rect x="32" y="52" width="8" height="8"/><rect x="40" y="52" width="8" height="8"/></g>
+  <!-- T 紫 -->
+  <g fill="#a200ff"><rect x="44" y="52" width="8" height="8"/><rect x="52" y="52" width="8" height="8"/><rect x="60" y="52" width="8" height="8"/><rect x="52" y="44" width="8" height="8"/></g>
+  <!-- I 青 竖条 -->
+  <g fill="#00d9ff"><rect x="68" y="12" width="8" height="8"/><rect x="68" y="20" width="8" height="8"/><rect x="68" y="28" width="8" height="8"/><rect x="68" y="36" width="8" height="8"/></g>
+  <!-- S 绿 落下中 -->
+  <g fill="#00e436"><rect x="80" y="8" width="8" height="8"/><rect x="88" y="8" width="8" height="8"/><rect x="72" y="16" width="8" height="8"/><rect x="80" y="16" width="8" height="8"/></g>
+  <!-- 底部堆积 -->
+  <g fill="#e5e2e1" opacity="0.25"><rect x="0" y="60" width="96" height="4"/></g>
+</svg>
