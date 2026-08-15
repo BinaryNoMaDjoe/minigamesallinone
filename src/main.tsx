@@ -10,6 +10,8 @@ import '@fontsource/hanken-grotesk/400.css'
 import '@fontsource/hanken-grotesk/500.css'
 import '@fontsource/space-grotesk/500.css'
 import '@fontsource/space-grotesk/700.css'
+// 游戏级像素字体（决策 #26 配套；游戏窗内 HUD/菜单使用）
+import '@fontsource/press-start-2p/400.css'
 
 import './theme/index.css'
 import App from './App'

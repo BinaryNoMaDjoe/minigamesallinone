@@ -14,6 +14,9 @@ importers:
       '@fontsource/hanken-grotesk':
         specifier: ^5.2.0
         version: 5.3.0
+      '@fontsource/press-start-2p':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/space-grotesk':
         specifier: ^5.2.0
         version: 5.3.0
@@ -357,6 +360,9 @@ packages:
 
   '@fontsource/hanken-grotesk@5.3.0':
     resolution: {integrity: sha512-eiqAvcMT88tCMCBzn6qKgMHGLJKq3NEXO3+0y9JXqzyty2U6KZnaGtbfiQgzRAXfwFp559hJQ0zBgJ6d89AuTA==}
+
+  '@fontsource/press-start-2p@5.3.0':
+    resolution: {integrity: sha512-gxWFxdeDglPhEYSwEeooomcaFK8kSQYLQwVxfnOJeYRj2sPEHXjpVtFgEaYfqzOjuAJGrIcJOipu2KY5YkbyuQ==}
 
   '@fontsource/space-grotesk@5.3.0':
     resolution: {integrity: sha512-ksnGizDPXIDuvqcTYTSrmZ+evx9sDlS8rp7+42BQ7wU+spt3twEoXfbJz672C+5CLg6VeUQwRy5RXshWb67LcQ==}
@@ -1764,6 +1770,8 @@ snapshots:
   '@fontsource/anybody@5.3.0': {}
 
   '@fontsource/hanken-grotesk@5.3.0': {}
+
+  '@fontsource/press-start-2p@5.3.0': {}
 
   '@fontsource/space-grotesk@5.3.0': {}
 
