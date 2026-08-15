@@ -65,10 +65,17 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
     onClose()
   }, [score, manifest.id, onClose])
 
-  // ESC 关闭 + 背景滚动锁定 + 卸载清理（§15）
+  // ESC 关闭 + 背景滚动锁定 + 初始聚焦（仅挂载一次）
+  // 注意：handleClose 依赖 score，必须经 ref 调用——若直接作为依赖，每次得分都会触发
+  // 本 effect 的清理函数，从而销毁游戏实例（曾导致"按一个键游戏即死"的缺陷）
+  const closeRef = useRef(handleClose)
+  useEffect(() => {
+    closeRef.current = handleClose
+  })
+
   useEffect(() => {
     const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose()
+      if (e.key === 'Escape') closeRef.current()
     }
     window.addEventListener('keydown', onKey)
     const previousOverflow = document.body.style.overflow
@@ -77,10 +84,16 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
     return () => {
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = previousOverflow
+    }
+  }, [])
+
+  // 卸载清理：仅在组件真正卸载时销毁游戏实例（StrictMode 重演安全）
+  useEffect(() => {
+    return () => {
       instanceRef.current?.destroy()
       instanceRef.current = null
     }
-  }, [handleClose])
+  }, [])
 
   // 焦点陷阱（§15 无障碍）
   const trapFocus = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
