@@ -1,12 +1,12 @@
 /* ============================================================
- * 游戏级二次元风 UI（唯一出处：lianliankan/DESIGN.md v0.1 §7）
- * 窗内允许圆角/软阴影/渐变（与网页级硬边漫画风刻意区分）
+ * 游戏级星露谷式像素 UI（唯一出处：lianliankan/DESIGN.md v0.2 §7）
+ * 硬边、深棕描边、硬阴影、Press Start 2P 像素字体（中文回退）
  * ============================================================ */
 
 .llk-tools {
   position: absolute;
-  right: 10px;
-  top: 68px;
+  right: 12px;
+  top: 72px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -14,24 +14,30 @@
 }
 
 .llk-tools button {
-  font-family: var(--font-label-bold);
-  font-size: 13px;
-  font-weight: 700;
-  color: #5b5566;
-  background: #fffdfd;
-  border: 2px solid #ffd6e3;
-  border-radius: 999px;
-  padding: 8px 14px;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #3a2c1a;
+  background: #f4e4c1;
+  border: 2px solid #5a4632;
+  box-shadow: 2px 2px 0 #3a2c1a;
+  padding: 8px 10px;
+  min-width: 132px;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  box-shadow: 0 3px 8px rgba(255, 150, 180, 0.25);
 }
 
 .llk-tools button:active {
-  transform: translateY(1px);
-  background: #ffeef4;
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.llk-tools button:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 /* —— 阶段浮层 —— */
@@ -42,70 +48,74 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(91, 85, 102, 0.45);
+  background: rgba(58, 44, 26, 0.5);
 }
 
 .llk-panel {
-  min-width: 240px;
+  min-width: 250px;
   max-width: 92%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
-  padding: 18px;
+  padding: 16px;
   text-align: center;
-  background: #fffdfd;
-  border: 2px solid #ffd6e3;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(255, 150, 180, 0.35);
+  background: #f4e4c1;
+  border: 3px solid #5a4632;
+  box-shadow: 4px 4px 0 #3a2c1a;
 }
 
 .llk-panel h2 {
   margin: 0 0 4px;
-  font-family: var(--font-headline-md);
-  font-size: 26px;
-  font-weight: 800;
-  color: #5b5566;
+  font-family: 'Press Start 2P', var(--font-headline-md);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #3a2c1a;
 }
 
 .llk-panel .row {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-family: var(--font-label-bold);
-  font-size: 13px;
-  font-weight: 700;
-  color: #9a8fa8;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #7a5c3a;
 }
 
 .llk-panel .row b {
-  color: #5b5566;
+  color: #3a2c1a;
 }
 
 .llk-panel .hint {
-  font-family: var(--font-label-sm);
-  font-size: 11px;
-  color: #9a8fa8;
+  font-family: 'Press Start 2P', var(--font-label-sm);
+  font-size: 8px;
+  line-height: 1.8;
+  color: #7a5c3a;
 }
 
 .llk-btn {
-  font-family: var(--font-label-bold);
-  font-size: 14px;
-  font-weight: 700;
-  padding: 9px 14px;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 10px 12px;
   cursor: pointer;
-  color: #5b5566;
-  background: #ffeef4;
-  border: 2px solid #ffd6e3;
-  border-radius: 999px;
+  color: #3a2c1a;
+  background: #fff6e0;
+  border: 2px solid #5a4632;
+  box-shadow: 2px 2px 0 #3a2c1a;
 }
 
 .llk-btn.primary {
   color: #ffffff;
-  background: #ff6b9d;
-  border-color: #ff6b9d;
+  background: #e05b4d;
+  border-color: #5a2e24;
 }
 
 .llk-btn:active {
-  transform: translateY(1px);
+  transform: translate(2px, 2px);
+  box-shadow: none;
 }
