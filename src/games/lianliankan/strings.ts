@@ -2,11 +2,11 @@ import type { LocalizedText } from '../shared/types'
 
 // ============================================================
 // 游戏内文案（双语，随界面语言；skills/skill-i18n.md）
-// 唯一出处：同目录 DESIGN.md v0.1 §7；{n} 为模板占位
+// 唯一出处：同目录 DESIGN.md v0.3 §7；{n} 为模板占位
 // ============================================================
 
 export const lianliankanStrings = {
-  title: { zh: '连连看', en: 'LIANLIANKAN' } satisfies LocalizedText,
+  title: { zh: '连连看', en: 'CLICKCLICK' } satisfies LocalizedText,
   start: { zh: '开始游戏', en: 'START' } satisfies LocalizedText,
   resume: { zh: '继续', en: 'RESUME' } satisfies LocalizedText,
   restart: { zh: '重新开始', en: 'RESTART' } satisfies LocalizedText,

@@ -10,7 +10,7 @@ const manifest: GameManifest = {
   id: 'lianliankan',
   name: {
     zh: '连连看',
-    en: 'LIANLIANKAN',
+    en: 'clickclick',
   },
   description: {
     zh: '星露谷式像素风的几何连连看：连接两个相同图形，路径不超过两个拐角，限时清空棋盘过关。',

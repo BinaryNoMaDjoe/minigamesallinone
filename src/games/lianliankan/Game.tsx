@@ -111,20 +111,19 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
       g.imageSmoothingEnabled = false
       g.clearRect(0, 0, W, H)
 
-      // 天空 + 云朵
+      // 天空 + 云朵（避开左上状态框）
       g.fillStyle = LLK_PALETTE.sky
       g.fillRect(0, 0, W, H)
-      drawCloud(g, 28, 26)
-      drawCloud(g, 176, 18)
-      drawCloud(g, 330, 34)
+      drawCloud(g, 168, 14)
+      drawCloud(g, 330, 30)
 
       // 草地
       g.fillStyle = LLK_PALETTE.grass
       g.fillRect(0, 244, W, H - 244)
       g.fillStyle = LLK_PALETTE.grassDark
-      for (let y = 252; y < H; y += 10) {
-        const offset = ((y / 10) % 2) * 8
-        for (let x = 4 + offset; x < W; x += 20) g.fillRect(x, y, 6, 3)
+      for (let y = 254; y < H; y += 14) {
+        const offset = ((y / 14) % 2) * 10
+        for (let x = 6 + offset; x < W; x += 26) g.fillRect(x, y, 6, 3)
       }
 
       // 棋盘：木框 + 面板
@@ -143,15 +142,21 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         engine.rows * (TILE + GAP) + 2,
       )
 
-      // 空格占位点
-      g.fillStyle = LLK_PALETTE.panelDark
-      for (let row = 0; row < engine.rows; row++) {
-        for (let col = 0; col < engine.cols; col++) {
-          if (engine.grid[row][col] === null) {
-            g.fillRect(tileX(col) + TILE / 2 - 3, tileY(row) + TILE / 2 - 3, 6, 6)
-          }
-        }
+      // 棋盘网格线（淡棕 1px，替代占位点，更整洁）
+      g.strokeStyle = LLK_PALETTE.panelLine
+      g.lineWidth = 1
+      g.beginPath()
+      for (let c = 0; c <= engine.cols; c++) {
+        const x = BOARD_X + c * (TILE + GAP) - 1
+        g.moveTo(x, BOARD_Y)
+        g.lineTo(x, BOARD_Y + engine.rows * (TILE + GAP))
       }
+      for (let r = 0; r <= engine.rows; r++) {
+        const y = BOARD_Y + r * (TILE + GAP) - 1
+        g.moveTo(BOARD_X, y)
+        g.lineTo(BOARD_X + engine.cols * (TILE + GAP), y)
+      }
+      g.stroke()
 
       // 方块精灵
       for (let row = 0; row < engine.rows; row++) {
@@ -214,21 +219,32 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
       })
       g.globalAlpha = 1
 
-      // HUD（像素字体）
+      // HUD：左上木框状态箱（三行，像素字体）
+      const boxX = 12
+      const boxY = 8
+      const boxW = 170
+      const boxH = 58
+      g.fillStyle = LLK_PALETTE.uiBg
+      g.fillRect(boxX, boxY, boxW, boxH)
+      g.strokeStyle = LLK_PALETTE.uiBorder
+      g.lineWidth = 2
+      g.strokeRect(boxX + 1, boxY + 1, boxW - 2, boxH - 2)
       g.textBaseline = 'top'
       g.textAlign = 'left'
-      g.fillStyle = LLK_PALETTE.text
       g.font = `8px ${PIXEL_FONT}`
-      g.fillText(`${t('level')} ${engine.level}`, 16, 12)
+      g.fillStyle = LLK_PALETTE.text
+      g.fillText(`${t('level')} ${engine.level}`, boxX + 8, boxY + 8)
       const secs = Math.max(0, Math.ceil(engine.timeLeftSec))
       const timeStr = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`
       g.fillStyle = secs <= 10 ? LLK_PALETTE.timeWarn : LLK_PALETTE.text
-      g.fillText(`${t('time')} ${timeStr}`, 16, 34)
+      g.fillText(`${t('time')} ${timeStr}`, boxX + 8, boxY + 26)
       g.fillStyle = LLK_PALETTE.text
-      g.fillText(`${t('score')} ${engine.score}`, 16, 56)
+      g.fillText(`${t('score')} ${engine.score}`, boxX + 8, boxY + 44)
 
-      // 连击提示
+      // 连击提示（带 1px 阴影提高可读性）
       if (engine.combo >= 2 && engine.phase === 'playing') {
+        g.fillStyle = LLK_PALETTE.uiShadow
+        g.fillText(`${t('combo')} x${engine.combo}`, 21, 301)
         g.fillStyle = LLK_PALETTE.select
         g.fillText(`${t('combo')} x${engine.combo}`, 20, 300)
       }
