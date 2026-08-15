@@ -38,4 +38,4 @@
 
 - 流程规范 v0.1~~v0.7（决策记录 #1~~#26）、架构约定与 ADR-0001~~0007、设计语言 v0.2~~v0.6
 - AGENTS.md 协作手册、skills 工作技能、agents 角色化代理
-- 发布与部署手册 v0.1（Cloudflare Pages 手动流程）
+- 发布与部署手册 v0.2（Cloudflare Pages：Direct Upload 或 Git 连接 + 关闭自动部署，发布手动触发）
