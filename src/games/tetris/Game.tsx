@@ -371,6 +371,8 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
         root.style.position = 'relative'
         root.style.width = '100%'
         root.style.height = '100%'
+        // 容器查询基准（§4.3 窄窗紧凑布局，styles.css @container）
+        root.style.containerType = 'inline-size'
         canvas = document.createElement('canvas')
         canvas.width = W
         canvas.height = H

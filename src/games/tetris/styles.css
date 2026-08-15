@@ -31,6 +31,10 @@
   background: var(--surface-container-lowest);
   border: 2px solid var(--ink);
   padding: 8px 12px;
+  min-height: 40px; /* §4.3：触控目标 ≥40px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -106,6 +110,10 @@
   font-weight: 400;
   text-transform: uppercase;
   padding: 10px 12px;
+  min-height: 40px; /* §4.3：触控目标 ≥40px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: var(--on-surface);
   background: var(--surface-container-highest);
@@ -120,4 +128,39 @@
 
 .tetris-btn:active {
   transform: translate(1px, 1px);
+}
+
+/* —— 窄窗紧凑布局（§4.3：root 为 inline-size 查询容器）——
+   面板取消最小宽、触屏控件换行收窄，任何窗口宽度下不裁切出界 */
+@container (max-width: 420px) {
+  .tetris-panel {
+    min-width: 0;
+    max-width: 96%;
+  }
+  .tetris-controls {
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    padding: 6px 8px;
+  }
+  .tetris-controls .group {
+    gap: 4px;
+  }
+  .tetris-controls button {
+    min-width: 40px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+@container (max-width: 200px) {
+  .tetris-controls {
+    gap: 4px 3px;
+  }
+  .tetris-controls .group {
+    gap: 3px;
+  }
+  .tetris-controls button {
+    min-width: 32px;
+    padding: 6px 4px;
+  }
 }
