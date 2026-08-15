@@ -1,5 +1,6 @@
 import type { GameManifest } from '../shared/types'
 import cover from './cover.svg'
+import coverPortrait from './cover-portrait.svg'
 
 // ============================================================
 // 俄罗斯方块（像素风）—— 首个正式游戏
@@ -28,6 +29,7 @@ const manifest: GameManifest = {
     en: 'Keyboard: ←→ move, ↓ soft drop, ↑/X rotate, Space hard drop, Enter restart (when game over). Touch: use the on-screen buttons.',
   },
   cover,
+  coverPortrait,
 }
 
 export default manifest

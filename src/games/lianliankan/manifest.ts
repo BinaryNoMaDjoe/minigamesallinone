@@ -1,5 +1,6 @@
 import type { GameManifest } from '../shared/types'
 import cover from './cover.svg'
+import coverPortrait from './cover-portrait.svg'
 
 // ============================================================
 // 连连看（星露谷式像素风）—— 第二个正式游戏
@@ -28,6 +29,7 @@ const manifest: GameManifest = {
     en: 'Tap two matching shapes: they vanish if the connecting path has at most two turns. Clear the board before time runs out. 3 hints and 3 shuffles per level.',
   },
   cover,
+  coverPortrait,
 }
 
 export default manifest

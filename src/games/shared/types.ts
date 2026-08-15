@@ -30,6 +30,9 @@ export interface GameManifest {
   howTo?: LocalizedText
   /** 封面缩略图 URL（决策 #26：游戏目录内 cover.svg 等资源导入；缺省时壳层用半调占位） */
   cover?: string
+  /** 竖版封面 URL（2:3，决策 #28：供大厅 Hero 面板/移动单面板 object-cover 铺满；
+      未提供时回退横版 cover + object-contain 半调衬底） */
+  coverPortrait?: string
 }
 
 /** 游戏内部阶段（决策 #24、ADR-0007） */
