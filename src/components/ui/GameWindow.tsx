@@ -142,14 +142,9 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
         aria-modal="true"
         aria-label={pickLang(manifest.name, lang)}
         onKeyDown={trapFocus}
-        className="relative comic-border bg-surface comic-shadow w-full overflow-hidden"
-        style={
-          {
-            '--game-ratio': gameRatio,
-            // §4.3 横竖屏硬约束：窗口高（标题栏+游戏区+控制条 ≈ 170px）不超出 92vh
-            maxWidth: 'min(92vw, 860px, calc((92vh - 170px) * var(--game-ratio)))',
-          } as CSSProperties
-        }
+        // §4.3 横竖屏硬约束：宽度公式在 theme/index.css .game-window-frame（92dvh + vh 回退，负值失效回退全宽）
+        className="relative comic-border bg-surface comic-shadow game-window-frame w-full overflow-hidden"
+        style={{ '--game-ratio': gameRatio } as CSSProperties}
       >
         {/* 标题栏：红底白字（同排行榜表头样式，§15） */}
         <div className="bg-primary text-on-primary border-b-4 border-ink flex items-center justify-between gap-2 p-3">

@@ -56,7 +56,7 @@ export function Lobby() {
   const heroPanels = gameRegistry.slice(0, 3)
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       {/* —— 顶部导航（§8.3）—— */}
       <header className="sticky top-0 z-50 bg-surface border-b-4 border-ink comic-shadow-red">
         <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-7xl mx-auto gap-4">
@@ -96,7 +96,7 @@ export function Lobby() {
 
       <main className="flex-grow">
         {/* —— Hero 区（§8.4）—— */}
-        <section className="relative w-full min-h-[80vh] flex items-center justify-center overflow-hidden border-b-4 border-ink px-margin-mobile md:px-margin-desktop py-12">
+        <section className="relative w-full min-h-[80svh] flex items-center justify-center overflow-hidden border-b-4 border-ink px-margin-mobile md:px-margin-desktop py-12">
           <div className="absolute inset-0 speed-lines opacity-50 z-0 pointer-events-none" />
           <div
             className="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-primary blur-3xl z-0 pointer-events-none"

@@ -105,6 +105,15 @@
   --spacing-stack-offset: 6px;
 }
 
+/* —— 游戏弹窗横竖屏硬约束（§4.3）——
+   窗口宽 = min(92vw, 860px, (92dvh − 170px) × 画布比例)
+   双声明：不支持 dvh 的浏览器忽略后一条回退 92vh；
+   算式结果 ≤0（视口高 <185px，无真实设备）时声明失效回退全宽 */
+.game-window-frame {
+  max-width: min(92vw, 860px, calc((92vh - 170px) * var(--game-ratio)));
+  max-width: min(92vw, 860px, calc((92dvh - 170px) * var(--game-ratio)));
+}
+
 /* 按压态（§6）：位移 1px 并移除阴影 —— 对应附录 B .active-press 配方，
    以 @utility 实现以支持 active: 变体（active:active-press） */
 @utility active-press {
