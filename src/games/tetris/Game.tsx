@@ -457,6 +457,9 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       start() {
         if (playing) return
         playing = true
+        // 生成第一块方块（修复：此前 spawn 仅由 lockPiece/restart 触发，启动时棋盘为空）
+        if (!current) spawn()
+        draw()
         last = performance.now()
         accumulator = 0
         rafId = requestAnimationFrame(loop)
