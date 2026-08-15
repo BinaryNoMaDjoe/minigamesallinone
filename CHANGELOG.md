@@ -38,4 +38,4 @@
 
 - 流程规范 v0.1~~v0.7（决策记录 #1~~#26）、架构约定与 ADR-0001~~0007、设计语言 v0.2~~v0.6
 - AGENTS.md 协作手册、skills 工作技能、agents 角色化代理
-- 发布与部署手册 v0.3（Cloudflare Workers Builds：构建/部署命令分离，版本手动 promote 上线）
+- 发布与部署手册 v0.4（Cloudflare Workers Builds 全流程 + wrangler.jsonc 修复 + 故障速查）
