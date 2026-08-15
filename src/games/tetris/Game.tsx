@@ -187,12 +187,14 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       ctx.textAlign = 'left'
       ctx.fillStyle = PALETTE.text
       ctx.font = 'bold 12px "Space Grotesk", monospace'
-      ctx.fillText(t('level'), 16, 16)
-      ctx.fillText(t('lines'), 16, 36)
-      ctx.fillText(t('next'), NEXT_X, 16)
+      ctx.fillText(t('score'), 16, 8)
+      ctx.fillText(t('level'), 16, 26)
+      ctx.fillText(t('lines'), 16, 44)
+      ctx.fillText(t('next'), NEXT_X, 8)
       ctx.font = 'bold 16px "Space Grotesk", monospace'
-      ctx.fillText(String(level), 78, 15)
-      ctx.fillText(String(lines), 78, 35)
+      ctx.fillText(String(score), 78, 7)
+      ctx.fillText(String(level), 78, 25)
+      ctx.fillText(String(lines), 78, 43)
       drawNextPreview(next)
 
       // 暂停 / 结束遮罩

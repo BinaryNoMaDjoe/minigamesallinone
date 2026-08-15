@@ -6,6 +6,7 @@ import type { LocalizedText } from '../shared/types'
 // ============================================================
 
 export const tetrisStrings = {
+  score: { zh: '分数', en: 'SCORE' } satisfies LocalizedText,
   level: { zh: '等级', en: 'LEVEL' } satisfies LocalizedText,
   lines: { zh: '行数', en: 'LINES' } satisfies LocalizedText,
   next: { zh: '下一个', en: 'NEXT' } satisfies LocalizedText,
