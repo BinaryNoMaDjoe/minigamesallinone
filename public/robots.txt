@@ -1,0 +1,4 @@
+# minigamesallinone.binarynomad.io（决策 #17：仅学习研究，禁止商用与传播）
+# 保守默认：禁止所有搜索引擎收录。如需开放收录，由用户人工指令修改。
+User-agent: *
+Disallow: /
