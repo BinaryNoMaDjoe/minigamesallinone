@@ -488,6 +488,8 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         root.style.position = 'relative'
         root.style.width = '100%'
         root.style.height = '100%'
+        // 容器查询基准（§4.3 窄窗紧凑布局，styles.css @container）
+        root.style.containerType = 'inline-size'
         canvas = document.createElement('canvas')
         canvas.width = W
         canvas.height = H
@@ -495,7 +497,8 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         canvas.style.height = '100%'
         canvas.style.display = 'block'
         canvas.style.imageRendering = 'pixelated'
-        canvas.style.touchAction = 'manipulation'
+        // §4.3：游戏画布 touch-action: none（指针事件统一处理，防触屏手势干扰）
+        canvas.style.touchAction = 'none'
         ctx = canvas.getContext('2d')
         root.appendChild(canvas)
         toolsEl = document.createElement('div')

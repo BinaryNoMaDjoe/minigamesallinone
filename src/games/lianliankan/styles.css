@@ -24,6 +24,10 @@
   box-shadow: 2px 2px 0 #3a2c1a;
   padding: 8px 10px;
   min-width: 132px;
+  min-height: 40px; /* §4.3：触控目标 ≥40px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -102,6 +106,10 @@
   font-weight: 400;
   line-height: 1.6;
   padding: 10px 12px;
+  min-height: 40px; /* §4.3：触控目标 ≥40px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: #3a2c1a;
   background: #fff6e0;
@@ -118,4 +126,30 @@
 .llk-btn:active {
   transform: translate(2px, 2px);
   box-shadow: none;
+}
+
+/* —— 窄窗紧凑布局（§4.3：root 为 inline-size 查询容器）——
+   道具列收窄贴右上天空区、面板取消最小宽，窄窗不与棋盘重叠、不裁切出界 */
+@container (max-width: 380px) {
+  .llk-tools {
+    right: 6px;
+    top: 6px;
+    gap: 6px;
+  }
+  .llk-tools button {
+    min-width: 80px;
+    padding: 8px 6px;
+  }
+  .llk-panel {
+    min-width: 0;
+    max-width: 96%;
+  }
+}
+
+@container (max-width: 240px) {
+  .llk-tools button {
+    min-width: 64px;
+    padding: 8px 4px;
+    font-size: 7px;
+  }
 }
