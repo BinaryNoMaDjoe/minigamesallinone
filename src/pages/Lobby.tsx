@@ -15,25 +15,28 @@ import { isDark, toggleTheme } from '../theme/theme'
 // 游戏弹窗互斥：同一时间只允许一个游戏窗口（§15）
 // ============================================================
 
+// 面板尺寸 = 拼贴容器宽度的比例 + min() 封顶（§4.3 响应式）：
+// 固定 w-64/w-80 在 md（容器仅约 384px）会溢出并被 section 裁切（用户反馈"堆叠卡片显示尺寸有问题"）。
+// 封顶值 = 原桌面设计尺寸（侧板 256px / 主卡 320px）；竖版比例：侧板 2:3（§11）、主卡 32:45（= 320×450 原设计）。
 const panelConfigs = [
   {
     rot: '-rotate-12',
     shadow: 'comic-shadow',
-    pos: 'top-10 left-0 w-64 h-96',
+    pos: 'top-10 left-0 w-[min(45%,16rem)] aspect-[2/3]',
     z: 'z-10',
     strip: 'bg-surface text-on-surface',
   },
   {
     rot: 'rotate-6',
     shadow: 'comic-shadow-red',
-    pos: 'top-0 left-1/4 w-80 h-[450px]',
+    pos: 'top-0 left-1/4 w-[min(56%,20rem)] aspect-[32/45]',
     z: 'z-30',
     strip: 'bg-primary text-on-primary',
   },
   {
     rot: 'rotate-12',
     shadow: 'comic-shadow',
-    pos: 'top-20 right-0 w-64 h-96',
+    pos: 'top-20 right-0 w-[min(45%,16rem)] aspect-[2/3]',
     z: 'z-20',
     strip: 'bg-surface text-on-surface',
   },
@@ -130,23 +133,26 @@ export function Lobby() {
                 {t('lobby.cta')}
               </Button>
 
-              {/* 移动端单张倾斜面板（§4.3：md 以下隐藏多面板拼贴，改单张） */}
+              {/* 移动端单张倾斜面板（§4.3：md 以下隐藏多面板拼贴，改单张）
+                  封面 object-contain + 半调衬底（§8.2：竖版面板铺满横版封面会裁切字标） */}
               {heroPanels.length > 0 && (
                 <div className="md:hidden self-center mt-2 relative">
                   <div className="rotate-3 comic-border bg-surface comic-shadow-red w-40 h-52 overflow-hidden">
-                    {heroPanels[0].manifest.cover ? (
-                      <img
-                        src={heroPanels[0].manifest.cover}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full halftone-bg bg-surface-container-high flex items-center justify-center">
-                        <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
-                          {pickLang(heroPanels[0].manifest.name, lang).slice(0, 1)}
-                        </span>
-                      </div>
-                    )}
+                    <div className="w-full h-full halftone-bg bg-surface-container-high">
+                      {heroPanels[0].manifest.cover ? (
+                        <img
+                          src={heroPanels[0].manifest.cover}
+                          alt=""
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
+                            {pickLang(heroPanels[0].manifest.name, lang).slice(0, 1)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <div className="absolute bottom-0 w-full bg-primary text-on-primary border-t-4 border-ink p-2 font-headline-md text-headline-md text-center italic uppercase">
                       {pickLang(heroPanels[0].manifest.name, lang)}
                     </div>
@@ -155,8 +161,9 @@ export function Lobby() {
               )}
             </div>
 
-            {/* 面板拼贴（占位：注册表驱动的分镜面板，封面美术后续替换） */}
-            <div className="md:col-span-7 relative h-[480px] w-full mt-12 md:mt-0 hidden md:block">
+            {/* 面板拼贴（注册表驱动的分镜面板；封面 object-contain + 半调衬底，
+                面板为 2:3 竖版而封面横版，铺满会裁切字标——见 §8.2、决策 #28） */}
+            <div className="md:col-span-7 relative md:h-[400px] lg:h-[500px] w-full mt-12 md:mt-0 hidden md:block">
               {heroPanels.map((entry, index) => {
                 const configIndex = heroPanels.length === 1 ? 1 : index
                 const cfg = panelConfigs[configIndex]
@@ -165,19 +172,21 @@ export function Lobby() {
                     key={entry.manifest.id}
                     className={`absolute ${cfg.pos} ${cfg.rot} comic-border bg-surface ${cfg.shadow} ${cfg.z} overflow-hidden`}
                   >
-                    {entry.manifest.cover ? (
-                      <img
-                        src={entry.manifest.cover}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full halftone-bg bg-surface-container-high flex items-center justify-center">
-                        <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
-                          {pickLang(entry.manifest.name, lang).slice(0, 1)}
-                        </span>
-                      </div>
-                    )}
+                    <div className="w-full h-full halftone-bg bg-surface-container-high">
+                      {entry.manifest.cover ? (
+                        <img
+                          src={entry.manifest.cover}
+                          alt=""
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
+                            {pickLang(entry.manifest.name, lang).slice(0, 1)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <div
                       className={`absolute bottom-0 w-full ${cfg.strip} border-t-4 border-ink p-2 font-headline-md text-headline-md text-center italic uppercase`}
                     >
