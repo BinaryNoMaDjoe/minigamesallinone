@@ -35,13 +35,21 @@ export function GameCard({ entry, onPlay, revealDelay = 0 }: GameCardProps) {
       ref={revealRef}
       className="relative comic-border bg-surface comic-shadow group hover:-translate-y-2 transition-transform duration-300"
     >
-      {/* 图区（占位：半调网点 + 游戏名首字；封面美术由游戏级规范产出后替换） */}
-      <div className="h-40 overflow-hidden relative bg-surface-container-high halftone-bg border-4 border-ink border-t-0 border-l-0 border-r-0">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-40 select-none">
-            {pickLang(manifest.name, lang).slice(0, 1)}
-          </span>
-        </div>
+      {/* 图区（封面缩略图，决策 #26；缺省时半调 + 首字占位） */}
+      <div className="h-40 overflow-hidden relative bg-surface-container-high border-4 border-ink border-t-0 border-l-0 border-r-0">
+        {manifest.cover ? (
+          <img
+            src={manifest.cover}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+        ) : (
+          <div className="absolute inset-0 halftone-bg flex items-center justify-center">
+            <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-40 select-none">
+              {pickLang(manifest.name, lang).slice(0, 1)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 文字区 */}

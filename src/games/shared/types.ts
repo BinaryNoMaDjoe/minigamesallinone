@@ -28,6 +28,8 @@ export interface GameManifest {
   supportsPause: boolean
   /** 玩法说明（显示于 GameWindow 气泡） */
   howTo?: LocalizedText
+  /** 封面缩略图 URL（决策 #26：游戏目录内 cover.svg 等资源导入；缺省时壳层用半调占位） */
+  cover?: string
 }
 
 /** 游戏内部阶段（决策 #24、ADR-0007） */

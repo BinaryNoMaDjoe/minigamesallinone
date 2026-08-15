@@ -134,11 +134,19 @@ export function Lobby() {
               {heroPanels.length > 0 && (
                 <div className="md:hidden self-center mt-2 relative">
                   <div className="rotate-3 comic-border bg-surface comic-shadow-red w-40 h-52 overflow-hidden">
-                    <div className="w-full h-full halftone-bg bg-surface-container-high flex items-center justify-center">
-                      <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
-                        {pickLang(heroPanels[0].manifest.name, lang).slice(0, 1)}
-                      </span>
-                    </div>
+                    {heroPanels[0].manifest.cover ? (
+                      <img
+                        src={heroPanels[0].manifest.cover}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full halftone-bg bg-surface-container-high flex items-center justify-center">
+                        <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
+                          {pickLang(heroPanels[0].manifest.name, lang).slice(0, 1)}
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute bottom-0 w-full bg-primary text-on-primary border-t-4 border-ink p-2 font-headline-md text-headline-md text-center italic uppercase">
                       {pickLang(heroPanels[0].manifest.name, lang)}
                     </div>
@@ -157,11 +165,19 @@ export function Lobby() {
                     key={entry.manifest.id}
                     className={`absolute ${cfg.pos} ${cfg.rot} comic-border bg-surface ${cfg.shadow} ${cfg.z} overflow-hidden`}
                   >
-                    <div className="w-full h-full halftone-bg bg-surface-container-high flex items-center justify-center">
-                      <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
-                        {pickLang(entry.manifest.name, lang).slice(0, 1)}
-                      </span>
-                    </div>
+                    {entry.manifest.cover ? (
+                      <img
+                        src={entry.manifest.cover}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full halftone-bg bg-surface-container-high flex items-center justify-center">
+                        <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
+                          {pickLang(entry.manifest.name, lang).slice(0, 1)}
+                        </span>
+                      </div>
+                    )}
                     <div
                       className={`absolute bottom-0 w-full ${cfg.strip} border-t-4 border-ink p-2 font-headline-md text-headline-md text-center italic uppercase`}
                     >
