@@ -1,0 +1,42 @@
+/* ============================================================
+ * 游戏级像素风触屏控件（唯一出处：tetris/DESIGN.md §5/§7）
+ * 窗内控件允许游戏级规范自由发挥；取色引用网页令牌（design-language.md §15 建议）
+ * ============================================================ */
+
+.tetris-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 6px 10px;
+  pointer-events: none;
+}
+
+.tetris-controls .group {
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.tetris-controls button {
+  font-family: var(--font-label-bold);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--on-surface);
+  background: var(--surface-container-lowest);
+  border: 2px solid var(--ink);
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.tetris-controls button:active {
+  transform: translate(1px, 1px);
+  background: var(--surface-container-high);
+}
