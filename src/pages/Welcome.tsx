@@ -47,11 +47,11 @@ export function Welcome({ leaving, onEnter }: WelcomeProps) {
       <div className="relative z-10 flex flex-col items-center gap-6">
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile sm:font-headline-lg sm:text-headline-lg lg:font-display-lg lg:text-display-lg uppercase italic font-black leading-none">
           <span className="block text-on-surface welcome-line-1">MINIGAMES</span>
-          <span className="block text-primary welcome-line-2">ALL IN ONE</span>
+          <span className="block text-primary welcome-line-2">ALLINONE</span>
         </h1>
         <div className="welcome-by">
-          <span className="font-label-bold text-label-bold uppercase tracking-widest text-on-surface-variant">
-            by BinaryNomad
+          <span className="font-label-bold text-label-bold tracking-widest text-on-surface-variant">
+            by@BinaryNomad.io
           </span>
         </div>
         <div className="welcome-enter mt-4">

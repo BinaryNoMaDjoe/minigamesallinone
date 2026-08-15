@@ -49,7 +49,7 @@ export const zh = {
 export type MessageKey = keyof typeof zh
 
 export const en: Record<MessageKey, string> = {
-  'common.appName': 'MINIGAMES ALL IN ONE',
+  'common.appName': 'MINIGAMESALLINONE',
   'common.publisher': 'BINARY NOMAD',
   'lobby.bubble': 'WARNING: EXTREMELY FUN',
   'lobby.heroTitleA': 'ALL THE GAMES',
