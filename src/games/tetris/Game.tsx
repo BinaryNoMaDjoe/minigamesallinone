@@ -1,15 +1,18 @@
 import { useEffect, useRef } from 'react'
 import { pickLang, useI18n } from '../../i18n'
+import { scoreService } from '../../services/score'
 import type { GameCallbacks, GameComponent, GameInstance } from '../shared/types'
-import { GRAVITY_MS, LINE_SCORES, PALETTE, PIECE_COLORS, SHAPES, rotateCW } from './pieces'
-import type { PieceType } from './pieces'
+import { PIECE_COLORS, PALETTE, SHAPES } from './pieces'
+import { TetrisEngine } from './engine'
+import type { TetrisPhase } from './engine'
 import { tetrisStrings as S } from './strings'
 import './styles.css'
 
 // ============================================================
-// 俄罗斯方块（像素风）—— 命令式 Canvas 引擎
-// 规则/色板/布局/控件的唯一出处：同目录 DESIGN.md
-// 分数实时经 callbacks.onScore 上报壳层，由壳层统一提交 ScoreService（ADR-0005）
+// 俄罗斯方块（像素风）—— 渲染与输入层
+// 规则/阶段状态机/色板/布局唯一出处：同目录 DESIGN.md v0.3
+// 纯逻辑在 engine.ts（node 直跑可测）；本文件只做 DOM/Canvas
+// 阶段：menu（主菜单）→ playing → paused/over（ADR-0007、决策 #24）
 // ============================================================
 
 const COLS = 10
@@ -23,67 +26,24 @@ const NEXT_X = 200
 const NEXT_Y = 32
 const NEXT_CELL = 12
 
-type Board = (PieceType | null)[][]
-
-interface ActivePiece {
-  type: PieceType
-  matrix: number[][]
-  x: number
-  y: number
-}
-
-function emptyBoard(): Board {
-  return Array.from({ length: ROWS }, () => Array<PieceType | null>(COLS).fill(null))
-}
-
-function cellsOf(matrix: number[][], px: number, py: number): { x: number; y: number }[] {
-  const cells: { x: number; y: number }[] = []
-  matrix.forEach((row, r) => {
-    row.forEach((value, c) => {
-      if (value) cells.push({ x: px + c, y: py + r })
-    })
-  })
-  return cells
-}
-
-function collides(board: Board, matrix: number[][], px: number, py: number): boolean {
-  return cellsOf(matrix, px, py).some(
-    ({ x, y }) => x < 0 || x >= COLS || y >= ROWS || (y >= 0 && board[y][x] !== null),
-  )
-}
-
-function shuffle(types: PieceType[]): PieceType[] {
-  const bag = [...types]
-  for (let i = bag.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[bag[i], bag[j]] = [bag[j], bag[i]]
-  }
-  return bag
-}
-
 export const TetrisGame: GameComponent = ({ onReady }) => {
   const { lang } = useI18n()
   const langRef = useRef(lang)
   langRef.current = lang
 
   useEffect(() => {
+    const engine = new TetrisEngine()
     let root: HTMLDivElement | null = null
     let canvas: HTMLCanvasElement | null = null
     let ctx: CanvasRenderingContext2D | null = null
+    let controlsEl: HTMLDivElement | null = null
+    let overlayEl: HTMLDivElement | null = null
+    let panelEl: HTMLDivElement | null = null
     let rafId = 0
-    let playing = false
-    let paused = false
-    let over = false
+    let running = false
     let last = performance.now()
-    let accumulator = 0
-    let board: Board = emptyBoard()
-    let bag: PieceType[] = shuffle([0, 1, 2, 3, 4, 5, 6])
-    let next: PieceType = bag.pop()!
-    let current: ActivePiece | null = null
-    let score = 0
-    let lines = 0
-    let level = 1
-    let gravityMs = GRAVITY_MS[0]
+    let lastScore = engine.score
+    let lastPhase: TetrisPhase = engine.phase
     let callbacks: GameCallbacks = { onScore: () => {} }
 
     const t = (key: keyof typeof S) => pickLang(S[key], langRef.current)
@@ -103,10 +63,12 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       ctx.globalAlpha = 1
     }
 
-    const drawNextPreview = (type: PieceType) => {
+    const drawNextPreview = () => {
       if (!ctx) return
+      const type = engine.nextType
       const matrix = SHAPES[type]
-      const cells = cellsOf(matrix, 0, 0)
+      const cells: { x: number; y: number }[] = []
+      matrix.forEach((row, r) => row.forEach((value, c) => value && cells.push({ x: c, y: r })))
       const minX = Math.min(...cells.map((c) => c.x))
       const maxX = Math.max(...cells.map((c) => c.x))
       const minY = Math.min(...cells.map((c) => c.y))
@@ -123,18 +85,6 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
           PIECE_COLORS[type],
         ),
       )
-    }
-
-    const drawGhost = () => {
-      if (!current || !ctx) return
-      const g = ctx
-      let gy = current.y
-      while (!collides(board, current.matrix, current.x, gy + 1)) gy++
-      cellsOf(current.matrix, current.x, gy).forEach(({ x, y }) => {
-        if (y < 0) return
-        g.fillStyle = PALETTE.ghost
-        g.fillRect(BOARD_X + x * CELL, BOARD_Y + y * CELL, CELL, CELL)
-      })
     }
 
     const draw = () => {
@@ -164,7 +114,7 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       ctx.stroke()
 
       // 已锁定方块
-      board.forEach((row, r) => {
+      engine.board.forEach((row, r) => {
         row.forEach((value, c) => {
           if (value !== null) {
             drawCell(BOARD_X + c * CELL, BOARD_Y + r * CELL, CELL, PIECE_COLORS[value])
@@ -173,13 +123,33 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       })
 
       // 幽灵块 + 当前方块
-      if (current && !over) {
-        const piece = current
-        drawGhost()
-        cellsOf(piece.matrix, piece.x, piece.y).forEach(({ x, y }) => {
-          if (y < 0) return
-          drawCell(BOARD_X + x * CELL, BOARD_Y + y * CELL, CELL, PIECE_COLORS[piece.type])
-        })
+      const piece = engine.current
+      if (piece && engine.phase !== 'menu') {
+        const gy = engine.ghostY
+        if (gy !== null) {
+          ctx.fillStyle = PALETTE.ghost
+          piece.matrix.forEach((row, r) =>
+            row.forEach((value, c) => {
+              if (!value) return
+              const y = gy + r
+              if (y < 0) return
+              ctx!.fillRect(BOARD_X + (piece.x + c) * CELL, BOARD_Y + y * CELL, CELL, CELL)
+            }),
+          )
+        }
+        piece.matrix.forEach((row, r) =>
+          row.forEach((value, c) => {
+            if (!value) return
+            const y = piece.y + r
+            if (y < 0) return
+            drawCell(
+              BOARD_X + (piece.x + c) * CELL,
+              BOARD_Y + y * CELL,
+              CELL,
+              PIECE_COLORS[piece.type],
+            )
+          }),
+        )
       }
 
       // 状态文字与 NEXT 预览
@@ -192,216 +162,146 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
       ctx.fillText(t('lines'), 16, 44)
       ctx.fillText(t('next'), NEXT_X, 8)
       ctx.font = 'bold 16px "Space Grotesk", monospace'
-      ctx.fillText(String(score), 78, 7)
-      ctx.fillText(String(level), 78, 25)
-      ctx.fillText(String(lines), 78, 43)
-      drawNextPreview(next)
+      ctx.fillText(String(engine.score), 78, 7)
+      ctx.fillText(String(engine.level), 78, 25)
+      ctx.fillText(String(engine.lines), 78, 43)
+      if (engine.phase !== 'menu') drawNextPreview()
+    }
 
-      // 暂停 / 结束遮罩
-      if (paused || over) {
-        ctx.fillStyle = PALETTE.dim
-        ctx.fillRect(BOARD_X, BOARD_Y, COLS * CELL, ROWS * CELL)
-        ctx.fillStyle = PALETTE.text
-        ctx.textAlign = 'center'
-        ctx.font = 'bold 20px "Space Grotesk", monospace'
-        ctx.fillText(
-          t(over ? 'gameOver' : 'paused'),
-          BOARD_X + (COLS * CELL) / 2,
-          BOARD_Y + (ROWS * CELL) / 2 - 24,
-        )
-        if (over) {
-          ctx.font = '10px "Space Grotesk", monospace'
-          ctx.fillText(
-            t('gameOverHint'),
-            BOARD_X + (COLS * CELL) / 2,
-            BOARD_Y + (ROWS * CELL) / 2 + 8,
-          )
-        }
-        ctx.textAlign = 'left'
+    /* —— 阶段菜单浮层（DOM，无障碍可达）—— */
+
+    const mkBtn = (label: string, onClick: () => void, primary = false) => {
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.textContent = label
+      btn.className = primary ? 'tetris-btn primary' : 'tetris-btn'
+      btn.addEventListener('click', onClick)
+      return btn
+    }
+
+    const row = (label: string, value: string) => {
+      const el = document.createElement('div')
+      el.className = 'row'
+      const l = document.createElement('span')
+      l.textContent = label
+      const v = document.createElement('b')
+      v.textContent = value
+      el.append(l, v)
+      return el
+    }
+
+    const renderOverlay = () => {
+      if (!overlayEl || !panelEl || !controlsEl) return
+      panelEl.replaceChildren()
+      const p = engine.phase
+      if (p === 'menu') {
+        const h = document.createElement('h2')
+        h.textContent = t('title')
+        panelEl.append(h, row(t('best'), String(scoreService.best('tetris'))))
+        panelEl.append(mkBtn(t('start'), () => engine.startRun(), true))
+        const hint = document.createElement('div')
+        hint.className = 'hint'
+        hint.textContent = t('menuHint')
+        panelEl.append(hint)
+      } else if (p === 'paused') {
+        const h = document.createElement('h2')
+        h.textContent = t('paused')
+        panelEl.append(h)
+        panelEl.append(mkBtn(t('resume'), () => engine.resume(), true))
+        panelEl.append(mkBtn(t('restart'), () => engine.startRun()))
+        panelEl.append(mkBtn(t('endRun'), () => engine.endRun()))
+        panelEl.append(mkBtn(t('toMenu'), () => engine.toMenu()))
+      } else if (p === 'over') {
+        const h = document.createElement('h2')
+        h.textContent = t('gameOver')
+        panelEl.append(h)
+        panelEl.append(row(t('score'), String(engine.score)))
+        panelEl.append(row(t('level'), String(engine.level)))
+        panelEl.append(row(t('lines'), String(engine.lines)))
+        panelEl.append(mkBtn(t('playAgain'), () => engine.startRun(), true))
+        panelEl.append(mkBtn(t('toMenu'), () => engine.toMenu()))
+      }
+      overlayEl.style.display = p === 'playing' ? 'none' : 'flex'
+      controlsEl.style.display = p === 'playing' || p === 'paused' ? 'flex' : 'none'
+    }
+
+    const sync = () => {
+      if (engine.score !== lastScore) {
+        lastScore = engine.score
+        callbacks.onScore(engine.score)
+      }
+      if (engine.phase !== lastPhase) {
+        lastPhase = engine.phase
+        callbacks.onPhase?.(engine.phase)
+        renderOverlay()
       }
     }
 
-    /* —— 引擎 —— */
-
-    const takeFromBag = (): PieceType => {
-      if (bag.length === 0) bag = shuffle([0, 1, 2, 3, 4, 5, 6])
-      return bag.pop()!
-    }
-
-    const spawn = () => {
-      const type = next
-      next = takeFromBag()
-      const matrix = SHAPES[type]
-      current = { type, matrix, x: Math.floor((COLS - matrix[0].length) / 2), y: -1 }
-      if (collides(board, matrix, current.x, current.y)) over = true
-    }
-
-    const lockPiece = () => {
-      if (!current) return
-      const { type, matrix, x, y } = current
-      let lockedOut = false
-      cellsOf(matrix, x, y).forEach(({ x: cx, y: cy }) => {
-        if (cy < 0) {
-          lockedOut = true
-          return
-        }
-        board[cy][cx] = type
-      })
-      if (lockedOut) {
-        over = true
-        callbacks.onScore(score)
-        draw()
-        return
-      }
-      // 消行
-      let cleared = 0
-      for (let r = ROWS - 1; r >= 0; r--) {
-        if (board[r].every((cell) => cell !== null)) {
-          board.splice(r, 1)
-          board.unshift(Array<PieceType | null>(COLS).fill(null))
-          cleared++
-          r++
-        }
-      }
-      if (cleared > 0) {
-        lines += cleared
-        score += LINE_SCORES[cleared] * level
-        level = 1 + Math.floor(lines / 10)
-        gravityMs = GRAVITY_MS[Math.min(level - 1, GRAVITY_MS.length - 1)]
-        callbacks.onScore(score)
-      }
-      current = null
-      spawn()
-      draw()
-    }
-
-    const stepDown = () => {
-      if (!current || paused || over) return
-      if (collides(board, current.matrix, current.x, current.y + 1)) lockPiece()
-      else {
-        current.y += 1
-        draw()
-      }
-    }
-
-    const move = (dx: number) => {
-      if (!current || paused || over) return
-      if (!collides(board, current.matrix, current.x + dx, current.y)) {
-        current.x += dx
-        draw()
-      }
-    }
-
-    const rotatePiece = () => {
-      if (!current || paused || over) return
-      const rotated = rotateCW(current.matrix)
-      // 简化踢墙偏移（DESIGN.md §2.4）
-      const kicks = [
-        [0, 0],
-        [-1, 0],
-        [1, 0],
-        [0, -1],
-        [-2, 0],
-        [2, 0],
-      ]
-      for (const [kx, ky] of kicks) {
-        if (!collides(board, rotated, current.x + kx, current.y + ky)) {
-          current.matrix = rotated
-          current.x += kx
-          current.y += ky
-          draw()
-          return
-        }
-      }
-    }
-
-    const softDrop = () => {
-      if (!current || paused || over) return
-      if (collides(board, current.matrix, current.x, current.y + 1)) {
-        lockPiece()
-        return
-      }
-      current.y += 1
-      score += 1
-      callbacks.onScore(score)
-      draw()
-    }
-
-    const hardDrop = () => {
-      if (!current || paused || over) return
-      let distance = 0
-      while (!collides(board, current.matrix, current.x, current.y + 1)) {
-        current.y += 1
-        distance++
-      }
-      score += distance * 2
-      callbacks.onScore(score)
-      lockPiece()
-    }
-
-    const restart = () => {
-      board = emptyBoard()
-      bag = shuffle([0, 1, 2, 3, 4, 5, 6])
-      next = takeFromBag()
-      score = 0
-      lines = 0
-      level = 1
-      gravityMs = GRAVITY_MS[0]
-      paused = false
-      over = false
-      accumulator = 0
-      callbacks.onScore(0)
-      spawn()
-      draw()
-    }
+    /* —— 主循环 —— */
 
     const loop = (now: number) => {
       const dt = Math.min(now - last, 250)
       last = now
-      if (playing && !paused && !over && current) {
-        accumulator += dt
-        while (accumulator >= gravityMs) {
-          accumulator -= gravityMs
-          stepDown()
-          if (!current || paused || over) break
-        }
-      }
+      if (running) engine.tick(dt)
+      sync()
+      draw()
       rafId = requestAnimationFrame(loop)
     }
 
     /* —— 输入 —— */
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (over) {
-        if (event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) {
+      // 焦点在按钮上时交给按钮（回车/空格触发点击）
+      if (event.target instanceof HTMLButtonElement) return
+      const p = engine.phase
+      if (p === 'menu') {
+        if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
-          restart()
+          engine.startRun()
         }
         return
       }
-      if (paused) return
+      if (p === 'over') {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          engine.startRun()
+        }
+        return
+      }
+      if (p === 'paused') {
+        if (event.key === 'Enter' || event.key.toLowerCase() === 'p') {
+          event.preventDefault()
+          engine.resume()
+        }
+        return
+      }
       switch (event.key) {
         case 'ArrowLeft':
           event.preventDefault()
-          move(-1)
+          engine.move(-1)
           break
         case 'ArrowRight':
           event.preventDefault()
-          move(1)
+          engine.move(1)
           break
         case 'ArrowDown':
           event.preventDefault()
-          softDrop()
+          engine.softDrop()
           break
         case 'ArrowUp':
         case 'x':
         case 'X':
           event.preventDefault()
-          rotatePiece()
+          engine.rotate()
           break
         case ' ':
           event.preventDefault()
-          hardDrop()
+          engine.hardDrop()
+          break
+        case 'p':
+        case 'P':
+          event.preventDefault()
+          engine.pause()
           break
       }
     }
@@ -422,11 +322,18 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
         return btn
       }
       left.append(
-        mk('◀', t('moveLeft'), () => move(-1)),
-        mk('▼', t('softDrop'), softDrop),
-        mk('▶', t('moveRight'), () => move(1)),
+        mk('◀', t('moveLeft'), () => engine.move(-1)),
+        mk('▼', t('softDrop'), () => engine.softDrop()),
+        mk('▶', t('moveRight'), () => engine.move(1)),
       )
-      right.append(mk('⟳', t('rotate'), rotatePiece), mk('⇓', t('hardDrop'), hardDrop))
+      right.append(
+        mk('⏸', t('pauseAction'), () => {
+          if (engine.phase === 'playing') engine.pause()
+          else if (engine.phase === 'paused') engine.resume()
+        }),
+        mk('⟳', t('rotate'), () => engine.rotate()),
+        mk('⇓', t('hardDrop'), () => engine.hardDrop()),
+      )
       controls.append(left, right)
       return controls
     }
@@ -449,43 +356,47 @@ export const TetrisGame: GameComponent = ({ onReady }) => {
         canvas.style.touchAction = 'none'
         ctx = canvas.getContext('2d')
         root.appendChild(canvas)
-        root.appendChild(buildControls())
+        controlsEl = buildControls()
+        root.appendChild(controlsEl)
+        overlayEl = document.createElement('div')
+        overlayEl.className = 'tetris-overlay'
+        panelEl = document.createElement('div')
+        panelEl.className = 'tetris-panel'
+        overlayEl.appendChild(panelEl)
+        root.appendChild(overlayEl)
         el.appendChild(root)
         window.addEventListener('keydown', onKeyDown)
+        // 初始阶段上报（ADR-0007：mount 后主动同步一次）
+        callbacks.onPhase?.(engine.phase)
+        renderOverlay()
         draw()
       },
       start() {
-        if (playing) return
-        playing = true
-        // 生成第一块方块（修复：此前 spawn 仅由 lockPiece/restart 触发，启动时棋盘为空）
-        if (!current) spawn()
-        draw()
+        if (running) return
+        running = true
         last = performance.now()
-        accumulator = 0
         rafId = requestAnimationFrame(loop)
       },
       pause() {
-        paused = true
-        draw()
+        engine.pause()
       },
       resume() {
-        paused = false
-        last = performance.now()
-        accumulator = 0
-        draw()
+        engine.resume()
       },
       restart() {
-        restart()
+        engine.startRun()
       },
       destroy() {
-        playing = false
-        paused = false
+        running = false
         cancelAnimationFrame(rafId)
         window.removeEventListener('keydown', onKeyDown)
         root?.remove()
         root = null
         canvas = null
         ctx = null
+        controlsEl = null
+        overlayEl = null
+        panelEl = null
       },
       setCallbacks(next) {
         callbacks = next

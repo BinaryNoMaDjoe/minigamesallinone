@@ -1,6 +1,6 @@
 /* ============================================================
- * 游戏级像素风触屏控件（唯一出处：tetris/DESIGN.md §5/§7）
- * 窗内控件允许游戏级规范自由发挥；取色引用网页令牌（design-language.md §15 建议）
+ * 游戏级像素风 UI（唯一出处：tetris/DESIGN.md v0.3 §7/§8）
+ * 触屏控件 + 阶段菜单浮层；取色引用网页令牌
  * ============================================================ */
 
 .tetris-controls {
@@ -13,6 +13,7 @@
   align-items: flex-end;
   padding: 6px 10px;
   pointer-events: none;
+  z-index: 5;
 }
 
 .tetris-controls .group {
@@ -39,4 +40,81 @@
 .tetris-controls button:active {
   transform: translate(1px, 1px);
   background: var(--surface-container-high);
+}
+
+/* —— 阶段菜单浮层（menu/paused/over，覆盖整个画布）—— */
+.tetris-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay);
+}
+
+.tetris-panel {
+  min-width: 208px;
+  max-width: 92%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 14px;
+  text-align: center;
+  background: var(--surface-container-lowest);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 0 var(--ink-shadow);
+}
+
+.tetris-panel h2 {
+  margin: 0 0 4px;
+  font-family: var(--font-headline-md);
+  font-size: 24px;
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  color: var(--on-surface);
+}
+
+.tetris-panel .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-label-bold);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+.tetris-panel .row b {
+  color: var(--on-surface);
+}
+
+.tetris-panel .hint {
+  font-family: var(--font-label-sm);
+  font-size: 11px;
+  color: var(--on-surface-variant);
+}
+
+.tetris-btn {
+  font-family: var(--font-label-bold);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--on-surface);
+  background: var(--surface-container-highest);
+  border: 2px solid var(--ink);
+}
+
+.tetris-btn.primary {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+
+.tetris-btn:active {
+  transform: translate(1px, 1px);
 }
