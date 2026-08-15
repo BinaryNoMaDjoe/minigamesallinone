@@ -1,7 +1,7 @@
 # 架构约定（Architecture）
 
-> **版本**：v0.1
-> **变更记录**：v0.1 初稿（2026-08-15，初始化阶段，对应 ADR-0001 ~ ADR-0006）
+> **版本**：v0.2
+> **变更记录**：v0.1 初稿（2026-08-15，初始化阶段，对应 ADR-0001 ~ ADR-0006）→ v0.2 生长（2026-08-15，用户确认，决策 #23）：目录结构纳入游戏级 DESIGN.md；示例游戏移除
 
 ## 1. 架构原则
 
@@ -33,6 +33,7 @@ minigamesallinone/
 │   │   ├── shared/            # 游戏基础设施（GameInstance 类型、useGameLoop 等）
 │   │   └── <game-id>/         # 每个游戏一个目录
 │   │       ├── manifest.ts    # 元数据 + 双语 + 主题 + 画布比例（唯一契约）
+│   │       ├── DESIGN.md      # 游戏级规范（规则逐条/色板出处/控件/未实现项，决策 #23）
 │   │       └── Game.tsx       # 游戏本体
 │   ├── pages/                 # 大厅等路由页面
 │   └── App.tsx                # 入口
@@ -44,31 +45,31 @@ minigamesallinone/
 
 ## 3. 分层依赖规则（违反 = 审查阻断级问题）
 
-| 层 | 目录 | 允许 import | 禁止 import |
-|---|---|---|---|
-| 令牌/主题 | `src/theme` | 无 | 一切业务 |
-| 服务 | `src/services` | 无（必要时 theme 类型） | games / pages / ui |
-| i18n | `src/i18n` | 无 | 业务 |
-| 公共 UI | `src/components/ui` | theme（必要时 i18n） | games / pages / services |
-| 游戏基础设施 | `src/games/shared` | theme、i18n、services | games/*、ui、pages |
-| 游戏 | `src/games/<id>` | theme、i18n、services、games/shared | 其他游戏、ui、pages |
-| 页面（大厅） | `src/pages` | ui、games（仅 registry/manifest 类型）、services、i18n | 无 |
-| 入口 | `src/App.tsx` 等 | 以上全部 | 无 |
+| 层           | 目录                | 允许 import                                            | 禁止 import              |
+| ------------ | ------------------- | ------------------------------------------------------ | ------------------------ |
+| 令牌/主题    | `src/theme`         | 无                                                     | 一切业务                 |
+| 服务         | `src/services`      | 无（必要时 theme 类型）                                | games / pages / ui       |
+| i18n         | `src/i18n`          | 无                                                     | 业务                     |
+| 公共 UI      | `src/components/ui` | theme（必要时 i18n）                                   | games / pages / services |
+| 游戏基础设施 | `src/games/shared`  | theme、i18n、services                                  | games/*、ui、pages       |
+| 游戏         | `src/games/<id>`    | theme、i18n、services、games/shared                    | 其他游戏、ui、pages      |
+| 页面（大厅） | `src/pages`         | ui、games（仅 registry/manifest 类型）、services、i18n | 无                       |
+| 入口         | `src/App.tsx` 等    | 以上全部                                               | 无                       |
 
 **要点**：游戏永远不依赖壳层；壳层通过接口消费游戏；`registry.ts` 由工具/约定自动生成，人工不得维护。
 
 ## 4. 关键机制速览
 
-| 机制 | 说明 | 出处 |
-|---|---|---|
-| 游戏注册表 | `import.meta.glob` 汇总各游戏 manifest；大厅卡片墙、弹窗入口全由注册表驱动；`React.lazy` 按需加载 | ADR-0001 |
-| GameWindow 弹窗 | 游戏以弹窗运行；窗外/窗框网页规范，窗内游戏规范；单窗口互斥 | ADR-0002、design-language.md §15 |
-| ScoreService | 分数/最高分/最近游玩统一经接口写入；首版 localStorage 实现 | ADR-0005 |
-| 设计令牌 | `tokens.css` 亮暗两套 CSS 变量 + Tailwind v4 `@theme`；键名与 design-language.md 附录一致 | ADR-0003 |
-| i18n | typed key 文案表 + localStorage 语言记忆；游戏元数据 manifest 双语 | ADR-0004 |
+| 机制            | 说明                                                                                              | 出处                             |
+| --------------- | ------------------------------------------------------------------------------------------------- | -------------------------------- |
+| 游戏注册表      | `import.meta.glob` 汇总各游戏 manifest；大厅卡片墙、弹窗入口全由注册表驱动；`React.lazy` 按需加载 | ADR-0001                         |
+| GameWindow 弹窗 | 游戏以弹窗运行；窗外/窗框网页规范，窗内游戏规范；单窗口互斥                                       | ADR-0002、design-language.md §15 |
+| ScoreService    | 分数/最高分/最近游玩统一经接口写入；首版 localStorage 实现                                        | ADR-0005                         |
+| 设计令牌        | `tokens.css` 亮暗两套 CSS 变量 + Tailwind v4 `@theme`；键名与 design-language.md 附录一致         | ADR-0003                         |
+| i18n            | typed key 文案表 + localStorage 语言记忆；游戏元数据 manifest 双语                                | ADR-0004                         |
 
 ## 5. 边界与待定
 
 - 包管理器待定（pnpm 推荐），见 process/README.md §8 遗留待定 #1
 - 首版无自动化测试与 CI（决策记录 #12）
-- 示例占位游戏随脚手架一并落地，用于验证 ADR-0001/0002/0005 全链路
+- 示例占位游戏已完成验证使命并移除（决策 #11/#23）；注册表/弹窗/计分链路由首个正式游戏（俄罗斯方块）持续验证
