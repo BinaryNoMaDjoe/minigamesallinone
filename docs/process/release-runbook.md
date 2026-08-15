@@ -68,9 +68,11 @@
 
 ## 7. 故障速查（首发踩坑记录）
 
-| 症状                                                                       | 原因                                                                       | 处理                                               |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------- |
-| 构建日志 pnpm install 报 packages field missing or empty                   | pnpm-workspace.yaml 缺 packages 字段（Cloudflare 构建镜像用 pnpm 10 校验） | 已修复（双键配置），勿回退                         |
-| 全路径返回 Hello world（text/plain）                                       | Deploy command 填了构建命令，只构建未部署，Worker 仍是模板                 | Deploy command 改为 npx wrangler deploy 后重新构建 |
-| 部署日志报 The assets property ... missing the required directory property | wrangler 非交互模式自动生成的配置缺 directory 字段                         | 仓库已提交 wrangler.jsonc（勿删）                  |
-| 域名解析不存在 / 指向错误项目                                              | 域名未绑定到本项目                                                         | 项目 Settings → Domains & Routes 核对              |
+| 症状                                                                       | 原因                                                                       | 处理                                                                                                                         |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 构建日志 pnpm install 报 packages field missing or empty                   | pnpm-workspace.yaml 缺 packages 字段（Cloudflare 构建镜像用 pnpm 10 校验） | 已修复（双键配置），勿回退                                                                                                   |
+| 全路径返回 Hello world（text/plain）                                       | Deploy command 填了构建命令，只构建未部署，Worker 仍是模板                 | Deploy command 改为 npx wrangler deploy 后重新构建                                                                           |
+| 部署日志报 The assets property ... missing the required directory property | wrangler 非交互模式自动生成的配置缺 directory 字段                         | 仓库已提交 wrangler.jsonc（勿删）                                                                                            |
+| 域名解析不存在 / 指向错误项目                                              | 域名未绑定到本项目                                                         | 项目 Settings → Domains & Routes 核对                                                                                        |
+| 域名返回 525 SSL handshake failed                                          | DNS 记录存在但没有任何 Workers 域名绑定（绑定被删/未创建）                 | 添加绑定：项目 Settings → Domains & Routes；或 API PUT /accounts/:id/workers/domains（zone_id+hostname+service+environment） |
+| robots.txt 出现 Cloudflare Managed content 段落                            | Cloudflare 边缘自动注入的托管内容                                          | 正常现象；本项目 User-agent: * Disallow: / 位于末尾仍生效                                                                    |
