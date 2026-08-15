@@ -214,7 +214,7 @@ export function Lobby() {
                 {t('lobby.empty')}
               </p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4 items-start">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
                 {gameRegistry.map((entry, index) => (
                   <GameCard
                     key={entry.manifest.id}

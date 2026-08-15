@@ -33,7 +33,7 @@ export function GameCard({ entry, onPlay, revealDelay = 0 }: GameCardProps) {
   return (
     <article
       ref={revealRef}
-      className="relative comic-border bg-surface comic-shadow group hover:-translate-y-2 transition-transform duration-300"
+      className="relative comic-border bg-surface comic-shadow group hover:-translate-y-2 transition-transform duration-300 flex flex-col"
     >
       {/* 图区（封面缩略图，决策 #26；缺省时半调 + 首字占位） */}
       <div className="h-40 overflow-hidden relative bg-surface-container-high border-4 border-ink border-t-0 border-l-0 border-r-0">
@@ -53,14 +53,14 @@ export function GameCard({ entry, onPlay, revealDelay = 0 }: GameCardProps) {
       </div>
 
       {/* 文字区 */}
-      <div className="p-6 halftone-bg">
+      <div className="p-6 halftone-bg flex flex-col flex-grow">
         <h3 className="font-headline-md text-headline-md uppercase italic mb-2">
           {pickLang(manifest.name, lang)}
         </h3>
         <p className="font-body-md text-body-md text-on-surface-variant mb-4 bg-surface p-2 comic-border-2">
           {pickLang(manifest.description, lang)}
         </p>
-        <Button variant="secondary" onClick={() => onPlay(manifest.id)}>
+        <Button variant="secondary" className="mt-auto" onClick={() => onPlay(manifest.id)}>
           {t('lobby.play')}
         </Button>
       </div>
