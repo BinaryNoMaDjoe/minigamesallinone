@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { gameRegistry } from '../games/registry'
+import type { GameEntry } from '../games/registry'
 import { pickLang, useI18n } from '../i18n'
 import { Button } from '../components/ui/Button'
 import { GameCard } from '../components/ui/GameCard'
@@ -57,6 +58,26 @@ export function Lobby() {
   }
 
   const heroPanels = gameRegistry.slice(0, 3)
+
+  // 竖版封面优先（决策 #28）：Hero 面板/移动单面板为 2:3 竖版，用 coverPortrait 铺满（无留白、无裁切）；
+  // 未提供竖版封面的游戏回退横版 cover + object-contain（半调衬底）
+  const renderHeroCover = (entry: GameEntry) => {
+    const portrait = entry.manifest.coverPortrait
+    const landscape = entry.manifest.cover
+    if (portrait) {
+      return <img src={portrait} alt="" className="w-full h-full object-cover" />
+    }
+    if (landscape) {
+      return <img src={landscape} alt="" className="w-full h-full object-contain" />
+    }
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
+          {pickLang(entry.manifest.name, lang).slice(0, 1)}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -133,25 +154,12 @@ export function Lobby() {
                 {t('lobby.cta')}
               </Button>
 
-              {/* 移动端单张倾斜面板（§4.3：md 以下隐藏多面板拼贴，改单张）
-                  封面 object-contain + 半调衬底（§8.2：竖版面板铺满横版封面会裁切字标） */}
+              {/* 移动端单张倾斜面板（§4.3：md 以下隐藏多面板拼贴，改单张；封面走竖版封面，决策 #28） */}
               {heroPanels.length > 0 && (
                 <div className="md:hidden self-center mt-2 relative">
                   <div className="rotate-3 comic-border bg-surface comic-shadow-red w-40 h-52 overflow-hidden">
                     <div className="w-full h-full halftone-bg bg-surface-container-high">
-                      {heroPanels[0].manifest.cover ? (
-                        <img
-                          src={heroPanels[0].manifest.cover}
-                          alt=""
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
-                            {pickLang(heroPanels[0].manifest.name, lang).slice(0, 1)}
-                          </span>
-                        </div>
-                      )}
+                      {renderHeroCover(heroPanels[0])}
                     </div>
                     <div className="absolute bottom-0 w-full bg-primary text-on-primary border-t-4 border-ink p-2 font-headline-md text-headline-md text-center italic uppercase">
                       {pickLang(heroPanels[0].manifest.name, lang)}
@@ -161,8 +169,7 @@ export function Lobby() {
               )}
             </div>
 
-            {/* 面板拼贴（注册表驱动的分镜面板；封面 object-contain + 半调衬底，
-                面板为 2:3 竖版而封面横版，铺满会裁切字标——见 §8.2、决策 #28） */}
+            {/* 面板拼贴（注册表驱动的分镜面板；封面使用竖版封面铺满——见 §8.2、决策 #28） */}
             <div className="md:col-span-7 relative md:h-[400px] lg:h-[500px] w-full mt-12 md:mt-0 hidden md:block">
               {heroPanels.map((entry, index) => {
                 const configIndex = heroPanels.length === 1 ? 1 : index
@@ -173,19 +180,7 @@ export function Lobby() {
                     className={`absolute ${cfg.pos} ${cfg.rot} comic-border bg-surface ${cfg.shadow} ${cfg.z} overflow-hidden`}
                   >
                     <div className="w-full h-full halftone-bg bg-surface-container-high">
-                      {entry.manifest.cover ? (
-                        <img
-                          src={entry.manifest.cover}
-                          alt=""
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="font-display-lg text-display-lg italic text-on-surface-variant opacity-30 select-none">
-                            {pickLang(entry.manifest.name, lang).slice(0, 1)}
-                          </span>
-                        </div>
-                      )}
+                      {renderHeroCover(entry)}
                     </div>
                     <div
                       className={`absolute bottom-0 w-full ${cfg.strip} border-t-4 border-ink p-2 font-headline-md text-headline-md text-center italic uppercase`}
