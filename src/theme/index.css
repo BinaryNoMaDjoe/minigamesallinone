@@ -161,19 +161,19 @@
 }
 .welcome-line-1 {
   animation:
-    welcome-rise 0.4s ease-out 0.1s both,
-    welcome-slam 0.3s ease-out 0.3s both;
+    welcome-rise 0.4s ease-out 0.1s backwards,
+    welcome-slam 0.3s ease-out 0.3s backwards;
 }
 .welcome-line-2 {
   animation:
-    welcome-rise 0.4s ease-out 0.22s both,
-    welcome-slam 0.3s ease-out 0.42s both;
+    welcome-rise 0.4s ease-out 0.22s backwards,
+    welcome-slam 0.3s ease-out 0.42s backwards;
 }
 .welcome-by {
-  animation: welcome-pop 0.3s ease-out 0.55s both;
+  animation: welcome-pop 0.3s ease-out 0.55s backwards;
 }
 .welcome-enter {
-  animation: welcome-fade 0.3s ease-out 0.8s both;
+  animation: welcome-fade 0.3s ease-out 0.8s backwards;
 }
 .welcome-leaving {
   opacity: 0;
