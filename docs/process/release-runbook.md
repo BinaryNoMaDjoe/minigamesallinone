@@ -1,16 +1,17 @@
 # 发布与部署手册（Release Runbook）
 
-> **版本**：v0.2
-> **变更记录**：v0.1 初稿（2026-08-15，首发前建立，用户指令）→ v0.2 修正（2026-08-15，用户指令）：允许 Connect to Git 路径——连接 Git 不等于自动部署，但必须关闭自动部署开关，发布一律手动触发
-> **性质**：操作性文档。纪律依据：docs/process/README.md §5（版本与发布）、决策 #16（CI/自动部署默认禁止）、决策 #17（版权声明）。Cloudflare 设置出处：[Branch deployment controls（官方文档）](https://developers.cloudflare.com/pages/configuration/branch-build-controls/)。
+> **版本**：v0.3
+> **变更记录**：v0.1 初稿（2026-08-15，首发前建立，用户指令）→ v0.2 修正（2026-08-15，用户指令）：允许 Connect to Git 路径，但必须关闭自动部署 → v0.3 修正（2026-08-15，首发实操复盘，用户指令）：当前 Cloudflare 界面已无旧版 Pages（Connect to Git / Upload assets）入口，统一为 **Workers Builds（Git 集成）** 流程；关键教训——「Deploy command」是部署命令（wrangler），不是构建命令，填构建命令会导致只构建不上传（站点保持模板 Hello World）
+> **性质**：操作性文档。纪律依据：docs/process/README.md §5（版本与发布）、决策 #16（CI/自动部署默认禁止）、决策 #17（版权声明）。Cloudflare 官方出处：[Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/)、[Workers Builds 配置](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)、[Wrangler 自动项目配置](https://developers.cloudflare.com/workers/framework-guides/automatic-configuration/)。
 
 ## 1. 铁律
 
 1. **发布与部署默认禁止**，仅由用户人工命令发起（决策 #16）
-2. **禁止自动部署**（决策 #16）：允许 Connect to Git，但必须关闭自动生产部署——Settings → Builds & deployments → Configure Production deployments → **取消勾选 Enable automatic production branch deployments**，并把 Automatic preview deployments 设为 **None**；发布一律手动触发
+2. **禁止自动部署**（决策 #16）：Workers Builds 默认推送即构建部署；上线后必须把 Deploy command 改为 `npx wrangler versions upload`（官方「关闭自动部署」方式：构建只生成版本，不 promote），上线 = 在 Dashboard 手动 promote 版本
 3. 域名：minigamesallinone.binarynomad.io（决策 #4）；托管在子域根路径，Vite base 保持默认 /，无需改动
 4. 版权：仅用于学习研究，禁止商用与传播（决策 #17）；站点 robots.txt 与 <meta name="robots"> 默认禁收录
-5. 产物 = dist/（纯静态，无后端、无 URL 路由、无 SPA 回退需求）
+5. 产物 = dist/（纯静态；本仓库无 wrangler 配置文件，wrangler deploy 会自动识别静态站并生成配置，无需手工维护 wrangler.jsonc）
+6. pnpm-workspace.yaml 必须保持「packages + onlyBuiltDependencies + allowBuilds」双键格式，兼容 Cloudflare 构建镜像的 pnpm 10 与本地 pnpm 11
 
 ## 2. 发布门（每次发布前，全部通过才可发布）
 
@@ -25,27 +26,29 @@
 
 1. 手写整理 CHANGELOG.md（按 Conventional Commits 分组，中文）
 2. git tag -a vX.Y.Z -m "发布 vX.Y.Z"（首版 v0.1.0）
-3. 确认 git status 干净
+3. git push 源码与标签到 GitHub（origin：BinaryNoMaDjoe/minigamesallinone）
 
-## 4. 部署（Cloudflare Pages · 手动触发）
+## 4. 部署（Cloudflare Workers Builds · 当前界面）
 
-### 路径 A：Direct Upload（默认推荐，纯手动）
+### 首次上线
 
-1. 本机通过 §2 发布门并构建出 dist/
-2. Dashboard → Workers & Pages → Create → Pages → **Upload assets（Direct Upload）**
-3. 项目名 minigamesallinone，把整个 dist/ 文件夹拖入上传 → Deploy，得到初始地址 https://minigamesallinone.pages.dev
-4. Custom domains → 添加 minigamesallinone.binarynomad.io（域名在 Cloudflare 管理时自动创建 CNAME 并签发 HTTPS，生效约 1~10 分钟）
-5. 按 §5 验证
+1. Workers & Pages → 创建 Worker（Git 集成）→ 连接仓库 BinaryNoMaDjoe/minigamesallinone
+2. 项目 Settings → Builds：
+   - **Build command**（构建命令）：`pnpm build`
+   - **Deploy command**（部署命令，必填）：`npx wrangler deploy`
+     - ⚠️ 该字段是部署命令而非构建命令；wrangler ≥4.68 自动识别 Vite 静态站（dist/index.html）并生成配置
+3. 手动触发一次构建（或 push 一个提交触发）→ 构建成功即上线（自定义域已绑定则直接生效）
+4. **上线后立即**把 Deploy command 改为 `npx wrangler versions upload`——此后推送只生成版本不自动上线，符合决策 #16
 
-### 路径 B：Connect to Git（可选；连接后必须关闭自动部署）
+### 绑定域名
 
-1. 先把源码与发布标签推到 GitHub（origin：BinaryNoMaDjoe/minigamesallinone）
-2. Create → Pages → **Connect to Git** → 选仓库 → 构建配置：框架预设 Vite、构建命令 pnpm build、输出目录 dist
-3. 创建后立即关闭自动部署（官方文档：Branch deployment controls）：
-   - Settings → Builds & deployments → **Configure Production deployments** → 取消勾选 **Enable automatic production branch deployments** → Save
-   - Automatic preview deployments 选 **None**（关闭所有预览分支自动构建）
-4. 需要发布时：在项目 Deployments 页面**手动触发**构建（以控制台实际入口为准）
-5. 若构建镜像不支持 pnpm（构建日志报错；仓库仅有 pnpm-lock.yaml），回退到路径 A
+- 项目 Settings → Domains & Routes → 添加 minigamesallinone.binarynomad.io（DNS 记录由 Cloudflare 自动创建并签发 HTTPS）
+
+### 后续每次发布
+
+1. 本地通过 §2 发布门 → §3 版本动作（push 触发构建生成版本）
+2. Dashboard → 项目 → Versions → 手动 **Promote** 目标版本上线
+3. 按 §5 验证；出问题把上一个版本重新 Promote 即回滚
 
 ## 5. 上线验证清单
 
@@ -56,14 +59,17 @@
 - [ ] 移动端竖屏提示与横屏硬约束（决策 #18）
 - [ ] /favicon.svg、/robots.txt、/og.png 可直访；社交卡片抓取正常（og:image 指向线上 URL）
 - [ ] 浏览器控制台无报错；懒加载 chunk 正常加载
+- [ ] 首页响应是 text/html 且包含 <div id="root">；任何路径都不再返回 Hello world
 
 ## 6. 回滚
 
-- Pages → Deployments → 历史部署 **Rollback**（推荐，秒级）
-- 或本地 git checkout vX.Y.Z 重建 dist/ 后重新上传
+- Dashboard → 项目 → Versions → 重新 Promote 上一个正常版本（秒级）
+- 或本地 git checkout vX.Y.Z 重建后按 §4 重新部署
 
-## 7. 后续版本更新
+## 7. 故障速查（首发踩坑记录）
 
-1. 本地通过 §2 发布门 → §3 版本动作
-2. 路径 A：项目内 Create new deployment → 上传新 dist/；路径 B：push 后在 Deployments 页手动触发构建
-3. 按 §5 验证；出问题按 §6 回滚
+| 症状                                                     | 原因                                                                       | 处理                                               |
+| -------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------- |
+| 构建日志 pnpm install 报 packages field missing or empty | pnpm-workspace.yaml 缺 packages 字段（Cloudflare 构建镜像用 pnpm 10 校验） | 已修复（双键配置），勿回退                         |
+| 全路径返回 Hello world（text/plain）                     | Deploy command 填了构建命令，只构建未部署，Worker 仍是模板                 | Deploy command 改为 npx wrangler deploy 后重新构建 |
+| 域名解析不存在 / 指向错误项目                            | 域名未绑定到本项目                                                         | 项目 Settings → Domains & Routes 核对              |
