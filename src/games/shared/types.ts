@@ -30,9 +30,14 @@ export interface GameManifest {
   howTo?: LocalizedText
 }
 
+/** 游戏内部阶段（决策 #24、ADR-0007） */
+export type GamePhase = 'menu' | 'playing' | 'paused' | 'over'
+
 export interface GameCallbacks {
   /** 游戏分数变化时上报（游戏不直接写存储，由壳层统一提交 ScoreService） */
   onScore(score: number): void
+  /** 阶段变化通知（可选：未实现的游戏视为常驻 playing，壳层保持旧行为） */
+  onPhase?(phase: GamePhase): void
 }
 
 export interface GameInstance {

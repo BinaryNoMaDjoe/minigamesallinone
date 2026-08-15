@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent } from 'react'
 import type { GameEntry } from '../../games/registry'
-import type { GameInstance } from '../../games/shared/types'
+import type { GameInstance, GamePhase } from '../../games/shared/types'
 import { scoreService } from '../../services/score'
 import { pickLang, useI18n } from '../../i18n'
 import { Button } from './Button'
@@ -34,7 +34,8 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
   const startTimeRef = useRef(Date.now())
 
   const [score, setScore] = useState(0)
-  const [paused, setPaused] = useState(false)
+  // 游戏内部阶段（ADR-0007）：未实现 onPhase 的游戏默认视为 playing（向后兼容）
+  const [phase, setPhase] = useState<GamePhase>('playing')
   const [showHowTo, setShowHowTo] = useState(false)
   const [initialBest] = useState(() => scoreService.best(manifest.id))
   const gameRatio = manifest.aspect.width / manifest.aspect.height
@@ -44,7 +45,7 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
   const handleReady = useCallback(
     (instance: GameInstance) => {
       instanceRef.current = instance
-      instance.setCallbacks({ onScore: handleScore })
+      instance.setCallbacks({ onScore: handleScore, onPhase: setPhase })
       if (mountRef.current) instance.mount(mountRef.current)
       instance.start()
     },
@@ -116,19 +117,16 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
   }, [])
 
   const togglePause = useCallback(() => {
-    if (paused) {
-      instanceRef.current?.resume()
-      setPaused(false)
-    } else {
+    if (phase === 'playing') {
       instanceRef.current?.pause()
-      setPaused(true)
+    } else if (phase === 'paused') {
+      instanceRef.current?.resume()
     }
-  }, [paused])
+  }, [phase])
 
   const handleRestart = useCallback(() => {
+    // 重开后分数与阶段由游戏经 onScore(0)/onPhase 回传，壳层不重复设置
     instanceRef.current?.restart()
-    setScore(0)
-    setPaused(false)
   }, [])
 
   return (
@@ -222,18 +220,20 @@ export function GameWindow({ entry, onClose }: GameWindowProps) {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {manifest.supportsPause && (
+            {manifest.supportsPause && (phase === 'playing' || phase === 'paused') && (
               <Button
                 variant="icon"
-                aria-label={paused ? t('shell.resume') : t('shell.pause')}
+                aria-label={phase === 'paused' ? t('shell.resume') : t('shell.pause')}
                 onClick={togglePause}
               >
-                {paused ? <PlayIcon /> : <PauseIcon />}
+                {phase === 'paused' ? <PlayIcon /> : <PauseIcon />}
               </Button>
             )}
-            <Button variant="icon" aria-label={t('shell.restart')} onClick={handleRestart}>
-              <RestartIcon />
-            </Button>
+            {phase !== 'menu' && (
+              <Button variant="icon" aria-label={t('shell.restart')} onClick={handleRestart}>
+                <RestartIcon />
+              </Button>
+            )}
           </div>
         </div>
       </div>
