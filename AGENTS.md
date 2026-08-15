@@ -4,7 +4,7 @@
 > **先完整阅读本文件，再阅读与任务相关的规范文档，然后才能动手。**
 > 本文件本身受生长机制约束（docs/process/evolution.md），修订需提案并获用户确认。
 >
-> **版本**：v0.2 | **变更记录**：v0.1 初稿（2026-08-15）→ v0.2（2026-08-15，用户指令）新增红线 8（CI/自动部署默认禁止）与版权声明。
+> **版本**：v0.3 | **变更记录**：v0.1 初稿（2026-08-15）→ v0.2（2026-08-15，用户指令）新增红线 8（CI/自动部署默认禁止）与版权声明 → v0.3（2026-08-15，用户确认，决策 #23）速查补充游戏级 DESIGN.md 约定。
 
 ---
 
@@ -29,17 +29,17 @@
 
 ## 2. 真相源链（文档地图）
 
-| 文档 | 内容 | 地位 |
-|---|---|---|
-| `AGENTS.md` | 本手册 | 宪法级 |
-| `docs/design-language.md` | 美术设计语言规范（Inked Kinetic，亮暗双主题） | 宪法级 |
-| `docs/process/README.md` | 流程规范（git/commit/质量门/版本/决策主表） | 强制 |
-| `docs/process/evolution.md` | 规范生长与迭代机制 | 强制 |
-| `docs/architecture/README.md` | 架构约定、目录结构、分层依赖规则 | 强制 |
-| `docs/architecture/adr/` | 架构决策记录（ADR） | 强制 |
-| `docs/design-reference/` | 规范溯源素材 | 只读，禁止修改 |
-| `skills/` | 可复用工作技能（按触发条件使用） | 按需 |
-| `agents/` | 角色化代理定义（开子代理时套用） | 按需 |
+| 文档                          | 内容                                          | 地位           |
+| ----------------------------- | --------------------------------------------- | -------------- |
+| `AGENTS.md`                   | 本手册                                        | 宪法级         |
+| `docs/design-language.md`     | 美术设计语言规范（Inked Kinetic，亮暗双主题） | 宪法级         |
+| `docs/process/README.md`      | 流程规范（git/commit/质量门/版本/决策主表）   | 强制           |
+| `docs/process/evolution.md`   | 规范生长与迭代机制                            | 强制           |
+| `docs/architecture/README.md` | 架构约定、目录结构、分层依赖规则              | 强制           |
+| `docs/architecture/adr/`      | 架构决策记录（ADR）                           | 强制           |
+| `docs/design-reference/`      | 规范溯源素材                                  | 只读，禁止修改 |
+| `skills/`                     | 可复用工作技能（按触发条件使用）              | 按需           |
+| `agents/`                     | 角色化代理定义（开子代理时套用）              | 按需           |
 
 ## 3. 标准工作流
 
@@ -47,7 +47,7 @@
 
 ## 4. 关键约定速查
 
-- 游戏 = `src/games/<id>/`（manifest.ts + Game.tsx）；注册表自动汇总、懒加载；新增游戏按 `skills/skill-add-game.md`
+- 游戏 = `src/games/<id>/`（manifest.ts + Game.tsx + DESIGN.md 游戏级规范）；注册表自动汇总、懒加载；新增游戏按 `skills/skill-add-game.md`
 - 游戏**弹窗运行**：窗外/窗框网页规范，窗内游戏规范（design-language.md §15、ADR-0002）
 - 双语：公共文案 `src/i18n/`，游戏元数据 manifest 双语；流程见 `skills/skill-i18n.md`
 - 取色/纹理/组件：只允许引用 design-language.md 令牌与附录配方；流程见 `skills/skill-design-system.md`

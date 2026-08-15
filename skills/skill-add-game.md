@@ -1,7 +1,7 @@
 # Skill：skill-add-game（新增一个小游戏）
 
-> **版本**：v0.1
-> **变更记录**：v0.1 初稿（2026-08-15）
+> **版本**：v0.2
+> **变更记录**：v0.1 初稿（2026-08-15）→ v0.2 生长（2026-08-15，用户确认，决策 #23）：步骤与检查清单纳入**游戏级规范 DESIGN.md**（随俄罗斯方块建立的模式）
 
 ## 触发条件
 
@@ -12,7 +12,7 @@
 1. `AGENTS.md`（红线与工作流）
 2. `docs/design-language.md` §15（弹窗运行模式与分区规则）
 3. `docs/architecture/README.md` §3（分层依赖规则）
-4. `src/games/` 现有实现与类型定义（`games/shared/` 类型、任一现有游戏目录）——**以代码为准**，不得凭空假设接口
+4. `src/games/` 现有实现与类型定义（`games/shared/` 类型、任一现有游戏目录的 `DESIGN.md` 范例）——**以代码为准**，不得凭空假设接口
 
 ## 核心纪律
 
@@ -23,19 +23,25 @@
 
 1. 读前置材料；整理用户未交代的信息 → 问用户
 2. 创建 `src/games/<game-id>/`（id 用 kebab-case，如 `snake`、`match-3`）
-3. 写 `manifest.ts`：
+3. 写**游戏级规范 `DESIGN.md`**（决策 #23，参考 `tetris/DESIGN.md` 结构）：
+   - 玩法规则逐条列出——**本文件即实现依据**；未实现项明确标注，禁止脑补
+   - 布局、控件说明
+   - 色板表：**每个色值给出出处**（网页令牌 / 本文件定义），禁止无出处色值
+   - 数值表（速度、计分等）与无障碍、生命周期约定
+4. 写 `manifest.ts`：
    - 双语 `name` / `description`（zh、en 都写，缺一不可）
    - `category`、`theme`（accent 色必须来自 design-language.md 令牌或用户确认值）
    - 画布比例、是否支持暂停/重开、控制方式说明
-4. 写 `Game.tsx`，实现 `GameInstance` 接口（以 `games/shared` 类型定义为准）：挂载、启动、暂停、恢复、重启、销毁
-5. 分数/进度统一走 `ScoreService`，禁止游戏直写 localStorage
-6. 注册表自动汇总，**不得手工改 registry.ts**；如需自定义入口信息，只改 manifest
-7. 自测：`typecheck` + `build`（以骨架脚本名为准）；大厅打开游戏弹窗手动玩一遍
-8. 按 `skill-code-review.md` 自检
-9. 按规范拆分提交：`feat(games): 新增<游戏名>`（涉及文档更新时 docs 单独提交）
+5. 写 `Game.tsx`，实现 `GameInstance` 接口（以 `games/shared` 类型定义为准）：挂载、启动、暂停、恢复、重启、销毁
+6. 分数/进度统一走 `ScoreService`，禁止游戏直写 localStorage
+7. 注册表自动汇总，**不得手工改 registry.ts**；如需自定义入口信息，只改 manifest
+8. 自测：`typecheck` + `build`（以骨架脚本名为准）；大厅打开游戏弹窗手动玩一遍
+9. 按 `skill-code-review.md` 自检
+10. 按规范拆分提交：`feat(games): 新增<游戏名>`（涉及文档更新时 docs 单独提交）
 
 ## 检查清单
 
+- [ ] 游戏级 DESIGN.md 齐全（规则逐条、色板有出处、未实现项明确）
 - [ ] manifest 双语齐全（zh/en）
 - [ ] theme 色值有出处（令牌/用户确认），无自造 hex
 - [ ] 只 import 白名单：theme、i18n、services、games/shared；无对其他游戏/壳层/pages 的 import
