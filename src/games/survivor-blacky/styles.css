@@ -1,0 +1,331 @@
+/* ============================================================
+ * 游戏级浮层 UI（唯一出处：survivor-blacky/DESIGN.md v1.0 §3/§6/§8）
+ * 阶段菜单 + 升级三选一卡片；取色引用网页令牌，框线遵循游戏墨线
+ * 触控目标 ≥40px；窄窗容器查询紧凑布局（design-language.md §4.3）
+ * ============================================================ */
+
+.sbk-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  container-type: inline-size;
+  background: #0f0e0e;
+}
+
+/* —— 阶段浮层（menu/paused/over）—— */
+.sbk-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay);
+}
+
+.sbk-panel {
+  min-width: 300px;
+  max-width: 92%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 18px 20px;
+  text-align: center;
+  background: var(--surface-container-lowest);
+  border: 3px solid var(--ink);
+  box-shadow: 5px 5px 0 0 var(--ink-shadow);
+}
+
+.sbk-title {
+  margin: 0;
+  font-family: var(--font-headline-lg);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--on-surface);
+  transform: skewX(-2deg);
+}
+
+.sbk-title.win {
+  color: var(--tertiary);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+
+.sbk-title.lose {
+  color: var(--primary);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+
+.sbk-tagline {
+  margin: 0;
+  font-family: var(--font-body-md);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--on-surface-variant);
+}
+
+.sbk-cause {
+  margin: 0;
+  font-family: var(--font-body-md);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--on-surface);
+  border: 2px solid var(--ink);
+  padding: 6px 10px;
+  background: var(--surface-container-low);
+}
+
+.sbk-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-label-bold);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+.sbk-row b {
+  color: var(--on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.sbk-row b.hl {
+  color: var(--tertiary);
+}
+
+.sbk-newbest {
+  font-family: var(--font-label-bold);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 2px solid var(--ink);
+  padding: 4px 8px;
+  margin: -2px auto 0;
+  transform: skewX(-4deg);
+}
+
+.sbk-hint {
+  font-family: var(--font-label-sm);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--on-surface-variant);
+  white-space: normal;
+}
+
+.sbk-btn {
+  font-family: var(--font-label-bold);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  min-height: 40px; /* §4.3：触控目标 ≥40px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--on-surface);
+  background: var(--surface-container-highest);
+  border: 2px solid var(--ink);
+}
+
+.sbk-btn.primary {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+
+.sbk-btn:active {
+  transform: translate(1px, 1px);
+}
+
+.sbk-btn:focus-visible,
+.sbk-card:focus-visible {
+  outline: 3px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+/* —— 升级三选一浮层 —— */
+.sbk-levelup {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay);
+  padding: 10px;
+}
+
+.sbk-levelup-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(720px, 96%);
+}
+
+.sbk-levelup-box .sbk-title {
+  color: var(--surface-container-lowest);
+  text-shadow: 3px 3px 0 var(--primary);
+  font-size: 30px;
+}
+
+.sbk-sub {
+  font-family: var(--font-label-bold);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--surface-container-lowest);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+
+.sbk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.sbk-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 12px 14px;
+  min-height: 148px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--on-surface);
+  background: var(--surface-container-lowest);
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 0 var(--ink-shadow);
+  font-family: var(--font-body-md);
+}
+
+.sbk-card.new {
+  background: var(--tertiary-fixed);
+  box-shadow: 4px 4px 0 0 var(--tertiary);
+}
+
+.sbk-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 0 var(--ink-shadow);
+}
+
+.sbk-card-tag {
+  font-family: var(--font-label-bold);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 2px solid var(--ink);
+  padding: 2px 8px;
+}
+
+.sbk-card-name {
+  font-family: var(--font-headline-md);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--on-surface);
+}
+
+.sbk-card-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--on-surface-variant);
+}
+
+.sbk-card-lvl {
+  font-family: var(--font-label-bold);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--secondary);
+}
+
+.sbk-card-key {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-label-bold);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--on-surface);
+  background: var(--surface-container-highest);
+  border: 2px solid var(--ink);
+}
+
+/* —— 窄窗紧凑布局（§4.3：root 为 inline-size 查询容器）—— */
+@container (max-width: 560px) {
+  .sbk-panel {
+    min-width: 0;
+    max-width: 96%;
+    padding: 12px 14px;
+    gap: 6px;
+  }
+  .sbk-title {
+    font-size: 20px;
+  }
+  .sbk-levelup-box .sbk-title {
+    font-size: 22px;
+  }
+  .sbk-cards {
+    gap: 8px;
+  }
+  .sbk-card {
+    min-height: 128px;
+    padding: 10px 8px 12px;
+    gap: 4px;
+  }
+  .sbk-card-name {
+    font-size: 14px;
+  }
+  .sbk-card-desc {
+    font-size: 11px;
+  }
+}
+
+@container (max-width: 340px) {
+  .sbk-cards {
+    grid-template-columns: 1fr;
+  }
+  .sbk-card {
+    min-height: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    text-align: left;
+    justify-content: flex-start;
+    gap: 4px 8px;
+    padding: 8px 10px;
+  }
+  .sbk-card-desc {
+    flex-basis: 100%;
+  }
+  .sbk-card-lvl {
+    margin-left: auto;
+  }
+  .sbk-card-key {
+    position: static;
+    margin-left: auto;
+  }
+}
