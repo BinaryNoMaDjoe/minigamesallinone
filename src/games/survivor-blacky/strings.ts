@@ -32,10 +32,6 @@ export const survivorbkStrings = {
     zh: '回车 开始 · WASD/方向键 移动 · P 暂停 · 触屏拖动 = 虚拟摇杆',
     en: 'ENTER START · WASD/ARROWS MOVE · P PAUSE · DRAG ON TOUCH',
   } satisfies LocalizedText,
-  menuHowTo: {
-    zh: '自动攻击，走位生存！吃小鱼干升级，三选一构筑武器，活过 10 波并击败鸽子王。',
-    en: 'Weapons fire on their own - just survive! Eat dried fish to level up, build your arsenal, outlive 10 waves and beat the Pigeon King.',
-  } satisfies LocalizedText,
 
   // —— 升级浮层 ——
   levelUp: { zh: '升级！', en: 'LEVEL UP!' } satisfies LocalizedText,
@@ -172,6 +168,106 @@ export const survivorbkStrings = {
     en: 'The Pigeon King was nothing. Extra dinner tonight!',
   } satisfies LocalizedText,
   newBest: { zh: '新纪录！', en: 'NEW RECORD!' } satisfies LocalizedText,
+
+  // —— 主菜单 / 面板（像素版 UI，DESIGN.md v1.1 §6） ——
+  menuStart: { zh: '开始游戏', en: 'START GAME' } satisfies LocalizedText,
+  menuAchievements: { zh: '成就', en: 'ACHIEVEMENTS' } satisfies LocalizedText,
+  menuBack: { zh: '返回', en: 'BACK' } satisfies LocalizedText,
+  menuBest: { zh: '最高分', en: 'BEST SCORE' } satisfies LocalizedText,
+  menuFooter: {
+    zh: '一只小黑猫 VS 整个动物园',
+    en: 'ONE LITTLE BLACK CAT VS THE WHOLE ZOO',
+  } satisfies LocalizedText,
+  achTitle: { zh: '成就', en: 'ACHIEVEMENTS' } satisfies LocalizedText,
+  achUnlocked: { zh: '已解锁', en: 'UNLOCKED' } satisfies LocalizedText,
+  achLocked: { zh: '未解锁', en: 'LOCKED' } satisfies LocalizedText,
+  achTotal: { zh: '累计击杀', en: 'TOTAL KILLS' } satisfies LocalizedText,
+  achToast: { zh: '成就解锁！', en: 'ACHIEVEMENT UNLOCKED!' } satisfies LocalizedText,
+  howTitle: { zh: '玩法说明', en: 'HOW TO PLAY' } satisfies LocalizedText,
+  howLines: [
+    {
+      zh: '自动战斗，走位生存！所有武器自动瞄准开火。',
+      en: 'Weapons fire on their own - just move and survive!',
+    },
+    {
+      zh: '吃小鱼干攒经验升级，三选一构筑武器与道具。',
+      en: 'Collect dried fish to level up. Pick 1 of 3 upgrades.',
+    },
+    {
+      zh: '活过 10 波并击败第 10 波的鸽子王即胜利。',
+      en: 'Survive 10 waves and defeat the Pigeon King to win.',
+    },
+    {
+      zh: '键盘：WASD/方向键移动 · P 暂停 · 1/2/3 选升级。',
+      en: 'Keyboard: WASD/arrows move · P pause · 1/2/3 pick.',
+    },
+    {
+      zh: '触屏：按住画面任意处拖动 = 虚拟摇杆。',
+      en: 'Touch: press and drag anywhere for a virtual joystick.',
+    },
+  ] as LocalizedText[],
+
+  // —— 成就（12 个，DESIGN.md v1.1 §7） ——
+  ach_first_kill: { zh: '初出茅庐', en: 'FIRST BLOOD' } satisfies LocalizedText,
+  ach_first_kill_desc: {
+    zh: '首次击杀任意敌人。',
+    en: 'Defeat your very first enemy.',
+  } satisfies LocalizedText,
+  ach_kill_100: { zh: '动物克星', en: 'ANIMAL BUSTER' } satisfies LocalizedText,
+  ach_kill_100_desc: {
+    zh: '累计击杀 100 只动物。',
+    en: 'Reach 100 total kills.',
+  } satisfies LocalizedText,
+  ach_kill_1000: { zh: '动物园噩梦', en: 'ZOO NIGHTMARE' } satisfies LocalizedText,
+  ach_kill_1000_desc: {
+    zh: '累计击杀 1000 只动物。',
+    en: 'Reach 1000 total kills.',
+  } satisfies LocalizedText,
+  ach_wave5: { zh: '小有所成', en: 'WARMED UP' } satisfies LocalizedText,
+  ach_wave5_desc: {
+    zh: '到达第 5 波。',
+    en: 'Reach wave 5.',
+  } satisfies LocalizedText,
+  ach_wave10: { zh: '摸到王座', en: 'THE THRONE AWAITS' } satisfies LocalizedText,
+  ach_wave10_desc: {
+    zh: '到达第 10 波。',
+    en: 'Reach wave 10.',
+  } satisfies LocalizedText,
+  ach_win: { zh: '鸽子王陨落', en: 'PIGEON KING DOWN' } satisfies LocalizedText,
+  ach_win_desc: {
+    zh: '击败鸽子王，通关本作。',
+    en: 'Defeat the Pigeon King and win the game.',
+  } satisfies LocalizedText,
+  ach_gem500: { zh: '鱼干收藏家', en: 'FISH HOARDER' } satisfies LocalizedText,
+  ach_gem500_desc: {
+    zh: '单局收集 500 条小鱼干。',
+    en: 'Collect 500 dried fish in one run.',
+  } satisfies LocalizedText,
+  ach_weapon_max: { zh: '神兵在手', en: 'MAXED OUT' } satisfies LocalizedText,
+  ach_weapon_max_desc: {
+    zh: '将任意一把武器升到满级。',
+    en: 'Level any weapon to the max.',
+  } satisfies LocalizedText,
+  ach_all_weapons: { zh: '全副武装', en: 'FULL ARSENAL' } satisfies LocalizedText,
+  ach_all_weapons_desc: {
+    zh: '一局内集齐全部 6 把武器。',
+    en: 'Own all 6 weapons in one run.',
+  } satisfies LocalizedText,
+  ach_level15: { zh: '满级猫', en: 'LEVEL 15 CAT' } satisfies LocalizedText,
+  ach_level15_desc: {
+    zh: '单局升到 15 级。',
+    en: 'Reach level 15 in one run.',
+  } satisfies LocalizedText,
+  ach_pig_death: { zh: '被猪拱了', en: 'PIGGED' } satisfies LocalizedText,
+  ach_pig_death_desc: {
+    zh: '被猪猪拱死一局。恭喜？',
+    en: 'Die to a piggy in a run. Congrats?',
+  } satisfies LocalizedText,
+  ach_perfect_wave1: { zh: '无伤开场', en: 'CLEAN START' } satisfies LocalizedText,
+  ach_perfect_wave1_desc: {
+    zh: '第 1 波全程无伤。',
+    en: 'Take zero hits during wave 1.',
+  } satisfies LocalizedText,
 
   // —— 主角台词（DESIGN.md §2.10） ——
   quoteStart: {

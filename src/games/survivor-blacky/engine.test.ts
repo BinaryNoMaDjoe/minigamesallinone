@@ -208,7 +208,15 @@ console.log('--- 波次推进 ---')
 {
   const e = new SurvivorEngine({ random: lcg(8) })
   e.startRun()
-  for (let i = 0; i < 60 * (WAVE_DURATION + 1); i++) e.tick(DT)
+  // 本用例只验证时间轴与刷怪构成，主角设为不可死
+  e.player.hp = 99999
+  e.player.maxHp = 99999
+  e.armor = 9999
+  for (let i = 0; i < 60 * (WAVE_DURATION + 1); i++) {
+    while (e.pendingLevelUps > 0) e.chooseUpgrade(0)
+    e.player.hp = 99999 // 猫罐头升级会重算生命上限，逐帧锁血
+    e.tick(DT)
+  }
   assert(e.wave === 2, '25 秒后进入第 2 波')
   assert(e.waveCompleted === 1, '已完成波次计数 1')
   assert(e.score >= 50, '完成波次得分 50')
@@ -231,6 +239,10 @@ console.log('--- 第 10 波 BOSS 与胜利路径 ---')
   e.waveTime = WAVE_DURATION - 0.2
   e.spawnBudget = 0
   e.enemies = []
+  // 只验证 BOSS 路径，主角设为不可死（免疫小怪骚扰）
+  e.player.hp = 99999
+  e.player.maxHp = 99999
+  e.armor = 9999
   for (let i = 0; i < 30; i++) e.tick(DT)
   assert(e.wave === WAVE_COUNT, '进入第 10 波')
   const boss = e.boss
@@ -249,9 +261,13 @@ console.log('--- 第 10 波 BOSS 与胜利路径 ---')
   boss!.speed = 0
   let guard = 0
   while (e.phase === 'playing' && guard < 60 * 20) {
+    while (e.pendingLevelUps > 0) e.chooseUpgrade(0)
+    // 确定性收割：清场只留 BOSS 贴脸，武器必中
+    e.enemies = e.enemies.filter((x) => x.kind === 'boss')
+    e.player.hp = 99999
     boss!.hp = Math.min(boss!.hp, 1)
-    boss!.x = WORLD_W / 2 + 400
-    boss!.y = 400
+    boss!.x = e.player.x + 120
+    boss!.y = e.player.y
     e.tick(DT)
     guard++
   }
@@ -357,6 +373,7 @@ console.log('--- 长时模拟无 NaN（自动选升级 + 拾取走位） ---')
   const simSeconds = 120
   for (let i = 0; i < 60 * simSeconds; i++) {
     while (e.pendingLevelUps > 0) e.chooseUpgrade(0)
+    e.player.hp = 99999 // 猫罐头升级会重算生命上限，逐帧锁血
     autopilotMove(e)
     e.tick(DT)
   }

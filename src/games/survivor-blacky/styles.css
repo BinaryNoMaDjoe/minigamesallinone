@@ -1,18 +1,22 @@
 /* ============================================================
- * 游戏级浮层 UI（唯一出处：survivor-blacky/DESIGN.md v1.0 §3/§6/§8）
- * 阶段菜单 + 升级三选一卡片；取色引用网页令牌，框线遵循游戏墨线
+ * 游戏级像素风 UI（唯一出处：survivor-blacky/DESIGN.md v1.1 §6）
+ * 字体：Press Start 2P（@fontsource 自托管）+ 中文字体回退栈
+ * 像素纪律：直角、4px 墨线、硬偏移阴影、无圆角无渐变
  * 触控目标 ≥40px；窄窗容器查询紧凑布局（design-language.md §4.3）
  * ============================================================ */
 
 .sbk-root {
   position: relative;
   width: 100%;
-  height: 100%;
   container-type: inline-size;
   background: #0f0e0e;
 }
 
-/* —— 阶段浮层（menu/paused/over）—— */
+.sbk-root canvas {
+  image-rendering: pixelated;
+}
+
+/* —— 阶段浮层（menu/achievements/howto/paused/over）—— */
 .sbk-overlay {
   position: absolute;
   inset: 0;
@@ -20,63 +24,54 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--overlay);
+  background: rgba(28, 27, 27, 0.55);
 }
 
 .sbk-panel {
-  min-width: 300px;
-  max-width: 92%;
+  min-width: 340px;
+  max-width: 94%;
+  max-height: 96%;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
-  padding: 18px 20px;
+  padding: 16px 18px;
   text-align: center;
   background: var(--surface-container-lowest);
-  border: 3px solid var(--ink);
-  box-shadow: 5px 5px 0 0 var(--ink-shadow);
+  border: 4px solid var(--ink);
+  box-shadow: 6px 6px 0 0 var(--ink-shadow);
 }
 
 .sbk-title {
   margin: 0;
-  font-family: var(--font-headline-lg);
-  font-style: italic;
-  font-weight: 900;
-  font-size: 26px;
-  line-height: 1.15;
+  font-family: 'Press Start 2P', var(--font-headline-md);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
   text-transform: uppercase;
-  letter-spacing: 0.01em;
   color: var(--on-surface);
-  transform: skewX(-2deg);
 }
 
 .sbk-title.win {
   color: var(--tertiary);
-  text-shadow: 2px 2px 0 var(--ink);
+  text-shadow: 3px 3px 0 var(--ink);
 }
 
 .sbk-title.lose {
   color: var(--primary);
-  text-shadow: 2px 2px 0 var(--ink);
-}
-
-.sbk-tagline {
-  margin: 0;
-  font-family: var(--font-body-md);
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--on-surface-variant);
+  text-shadow: 3px 3px 0 var(--ink);
 }
 
 .sbk-cause {
   margin: 0;
   font-family: var(--font-body-md);
   font-weight: 700;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--on-surface);
   border: 2px solid var(--ink);
-  padding: 6px 10px;
+  padding: 6px 8px;
   background: var(--surface-container-low);
 }
 
@@ -84,11 +79,12 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  font-family: var(--font-label-bold);
-  font-size: 13px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  font-weight: 400;
   text-transform: uppercase;
   color: var(--on-surface-variant);
+  line-height: 1.6;
 }
 
 .sbk-row b {
@@ -101,34 +97,37 @@
 }
 
 .sbk-newbest {
-  font-family: var(--font-label-bold);
-  font-size: 12px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--on-primary);
   background: var(--primary);
   border: 2px solid var(--ink);
-  padding: 4px 8px;
+  padding: 5px 8px;
   margin: -2px auto 0;
-  transform: skewX(-4deg);
 }
 
 .sbk-hint {
-  font-family: var(--font-label-sm);
-  font-size: 11px;
-  line-height: 1.7;
+  font-family: 'Press Start 2P', var(--font-label-sm);
+  font-size: 7px;
+  line-height: 2;
   color: var(--on-surface-variant);
-  white-space: normal;
+}
+
+.sbk-side-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .sbk-btn {
-  font-family: var(--font-label-bold);
-  font-size: 13px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 10px 14px;
+  line-height: 1.7;
+  padding: 10px 12px;
   min-height: 40px; /* §4.3：触控目标 ≥40px */
   display: inline-flex;
   align-items: center;
@@ -136,7 +135,8 @@
   cursor: pointer;
   color: var(--on-surface);
   background: var(--surface-container-highest);
-  border: 2px solid var(--ink);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 0 var(--ink-shadow);
 }
 
 .sbk-btn.primary {
@@ -145,13 +145,98 @@
 }
 
 .sbk-btn:active {
-  transform: translate(1px, 1px);
+  transform: translate(3px, 3px);
+  box-shadow: none;
 }
 
 .sbk-btn:focus-visible,
 .sbk-card:focus-visible {
   outline: 3px solid var(--secondary);
   outline-offset: 2px;
+}
+
+/* —— 成就面板 —— */
+.sbk-ach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.sbk-ach {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--ink);
+  padding: 6px 8px;
+  background: var(--surface-container-low);
+}
+
+.sbk-ach.on {
+  background: var(--tertiary-fixed);
+}
+
+.sbk-ach-icon {
+  flex-shrink: 0;
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sbk-ach-icon .sbk-icon,
+.sbk-card .sbk-icon {
+  image-rendering: pixelated;
+}
+
+.sbk-ach-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.sbk-ach-name {
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  text-transform: uppercase;
+  color: var(--on-surface);
+  line-height: 1.6;
+}
+
+.sbk-ach-desc {
+  font-family: var(--font-body-md);
+  font-size: 11px;
+  color: var(--on-surface-variant);
+  line-height: 1.5;
+}
+
+.sbk-ach-state {
+  font-family: 'Press Start 2P', var(--font-label-sm);
+  font-size: 7px;
+  text-transform: uppercase;
+  color: var(--secondary);
+  line-height: 1.6;
+}
+
+.sbk-ach.on .sbk-ach-state {
+  color: var(--tertiary);
+}
+
+/* —— 玩法说明 —— */
+.sbk-how-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.sbk-how-line {
+  font-family: var(--font-body-md);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--on-surface);
+  border-left: 4px solid var(--primary);
+  padding: 4px 8px;
+  background: var(--surface-container-low);
 }
 
 /* —— 升级三选一浮层 —— */
@@ -162,7 +247,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--overlay);
+  background: rgba(28, 27, 27, 0.55);
   padding: 10px;
 }
 
@@ -170,22 +255,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  width: min(720px, 96%);
+  gap: 10px;
+  width: min(760px, 98%);
 }
 
 .sbk-levelup-box .sbk-title {
   color: var(--surface-container-lowest);
   text-shadow: 3px 3px 0 var(--primary);
-  font-size: 30px;
+  font-size: 16px;
 }
 
 .sbk-sub {
-  font-family: var(--font-label-bold);
-  font-size: 12px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
   color: var(--surface-container-lowest);
   text-shadow: 2px 2px 0 var(--ink);
 }
@@ -202,58 +285,54 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 12px 12px 14px;
-  min-height: 148px;
+  gap: 6px;
+  padding: 12px 10px 14px;
+  min-height: 190px;
   text-align: center;
   cursor: pointer;
   color: var(--on-surface);
   background: var(--surface-container-lowest);
-  border: 3px solid var(--ink);
-  box-shadow: 4px 4px 0 0 var(--ink-shadow);
+  border: 4px solid var(--ink);
+  box-shadow: 5px 5px 0 0 var(--ink-shadow);
   font-family: var(--font-body-md);
 }
 
 .sbk-card.new {
   background: var(--tertiary-fixed);
-  box-shadow: 4px 4px 0 0 var(--tertiary);
+  box-shadow: 5px 5px 0 0 var(--tertiary);
 }
 
 .sbk-card:active {
-  transform: translate(2px, 2px);
+  transform: translate(3px, 3px);
   box-shadow: 2px 2px 0 0 var(--ink-shadow);
 }
 
 .sbk-card-tag {
-  font-family: var(--font-label-bold);
-  font-size: 10px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 7px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
   color: var(--on-primary);
   background: var(--primary);
   border: 2px solid var(--ink);
-  padding: 2px 8px;
+  padding: 3px 6px;
 }
 
 .sbk-card-name {
-  font-family: var(--font-headline-md);
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1.2;
+  font-family: 'Press Start 2P', var(--font-headline-md);
+  font-size: 9px;
+  line-height: 1.7;
   color: var(--on-surface);
 }
 
 .sbk-card-desc {
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.5;
   color: var(--on-surface-variant);
 }
 
 .sbk-card-lvl {
-  font-family: var(--font-label-bold);
-  font-size: 11px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 7px;
   text-transform: uppercase;
   color: var(--secondary);
 }
@@ -267,41 +346,59 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-label-bold);
-  font-size: 12px;
-  font-weight: 700;
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 9px;
   color: var(--on-surface);
   background: var(--surface-container-highest);
   border: 2px solid var(--ink);
+}
+
+/* —— 成就解锁提示 —— */
+.sbk-toasts {
+  position: absolute;
+  top: 66px;
+  right: 10px;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.sbk-toast {
+  font-family: 'Press Start 2P', var(--font-label-bold);
+  font-size: 8px;
+  text-transform: uppercase;
+  line-height: 1.7;
+  color: var(--on-surface);
+  background: var(--surface-container-lowest);
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 0 var(--tertiary);
+  padding: 8px 10px;
+  max-width: 260px;
 }
 
 /* —— 窄窗紧凑布局（§4.3：root 为 inline-size 查询容器）—— */
 @container (max-width: 560px) {
   .sbk-panel {
     min-width: 0;
-    max-width: 96%;
-    padding: 12px 14px;
+    max-width: 98%;
+    padding: 10px 12px;
     gap: 6px;
-  }
-  .sbk-title {
-    font-size: 20px;
-  }
-  .sbk-levelup-box .sbk-title {
-    font-size: 22px;
   }
   .sbk-cards {
     gap: 8px;
   }
   .sbk-card {
-    min-height: 128px;
-    padding: 10px 8px 12px;
+    min-height: 168px;
+    padding: 10px 6px 12px;
     gap: 4px;
   }
   .sbk-card-name {
-    font-size: 14px;
+    font-size: 8px;
   }
   .sbk-card-desc {
-    font-size: 11px;
+    font-size: 10px;
   }
 }
 

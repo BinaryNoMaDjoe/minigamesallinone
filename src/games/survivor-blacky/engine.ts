@@ -9,8 +9,9 @@
 export type Rng = () => number
 
 // —— 常量（DESIGN.md §2） ——
-export const WORLD_W = 2400
-export const WORLD_H = 1500
+// 单屏竞技场（DESIGN.md v1.1 §2.1）：画布 1:1 显示全部场地，无相机
+export const WORLD_W = 960
+export const WORLD_H = 540
 export const WAVE_COUNT = 10
 export const WAVE_DURATION = 25
 export const MAX_ENEMIES = 240
@@ -41,7 +42,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
   pig: {
     hp: 20,
     damage: 8,
-    speed: 55,
+    speed: 46,
     radius: 15,
     xp: 1,
     wobbleFreq: 1.2,
@@ -51,7 +52,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
   chicken: {
     hp: 10,
     damage: 6,
-    speed: 95,
+    speed: 82,
     radius: 11,
     xp: 1,
     wobbleFreq: 5.2,
@@ -61,7 +62,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
   dog: {
     hp: 16,
     damage: 10,
-    speed: 120,
+    speed: 104,
     radius: 14,
     xp: 2,
     wobbleFreq: 2.4,
@@ -71,7 +72,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
   pigeon: {
     hp: 46,
     damage: 14,
-    speed: 40,
+    speed: 34,
     radius: 19,
     xp: 3,
     wobbleFreq: 1.8,
@@ -81,7 +82,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
   minipigeon: {
     hp: 12,
     damage: 8,
-    speed: 80,
+    speed: 70,
     radius: 9,
     xp: 1,
     wobbleFreq: 5.5,
@@ -91,7 +92,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
   boss: {
     hp: 2800,
     damage: 24,
-    speed: 34,
+    speed: 30,
     radius: 42,
     xp: 80,
     wobbleFreq: 0.7,
@@ -347,12 +348,16 @@ export class SurvivorEngine {
   kills = 0
   waveCompleted = 0
   bossKilled = 0
+  /** 本局收集小鱼干数（成就用） */
+  gemsCollected = 0
+  /** 本局受击次数（成就用） */
+  hitsTaken = 0
 
   pendingLevelUps = 0
   pendingChoices: UpgradeOption[][] = []
 
   // —— 派生属性（computeStats 更新） ——
-  speed = 190
+  speed = 165
   armor = 0
   damageMult = 1
   attackSpeedMult = 1
@@ -447,6 +452,8 @@ export class SurvivorEngine {
     this.kills = 0
     this.waveCompleted = 0
     this.bossKilled = 0
+    this.gemsCollected = 0
+    this.hitsTaken = 0
     this.levelValue = 1
     this.xpProgress = 0
     this.pendingLevelUps = 0
@@ -521,7 +528,7 @@ export class SurvivorEngine {
   computeStats(): void {
     const p = this.passiveLevels
     this.player.maxHp = 100 + 15 * p.canned
-    this.speed = 190 * (1 + 0.07 * p.teaser)
+    this.speed = 165 * (1 + 0.07 * p.teaser)
     this.armor = p.fur
     this.damageMult = 1 + 0.08 * p.claws
     this.attackSpeedMult = 1 + 0.08 * p.coffee
@@ -757,7 +764,7 @@ export class SurvivorEngine {
   private spawnPosition(): { x: number; y: number } {
     const side = Math.floor(this.random() * 4)
     const t = this.random()
-    const m = 45
+    const m = 20
     if (side === 0) return { x: WORLD_W * t, y: -m }
     if (side === 1) return { x: WORLD_W + m, y: WORLD_H * t }
     if (side === 2) return { x: WORLD_W * t, y: WORLD_H + m }
@@ -885,6 +892,7 @@ export class SurvivorEngine {
       if (dist < hitDist && p.invuln <= 0 && p.hp > 0) {
         const amount = Math.max(1, Math.round(e.damage - this.armor))
         p.hp -= amount
+        this.hitsTaken++
         p.invuln = PLAYER_INVULN
         p.hurtT = 0.25
         // 击退玩家（瞬时）与敌人（BOSS 免疫）
@@ -1399,6 +1407,7 @@ export class SurvivorEngine {
       }
       if (g.magnet && dist < 16) {
         g.dead = true
+        this.gemsCollected++
         this.gainXp(g.value)
         this.emit({ type: 'collect', x: g.x, y: g.y, value: g.value })
       }
