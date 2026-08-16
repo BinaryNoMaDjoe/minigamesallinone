@@ -1,7 +1,7 @@
 {
   "name": "minigamesallinone",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "minigamesallinone.binarynomad.io — 多小游戏合集入口。仅用于学习研究，禁止商用与传播。",
   "type": "module",
   "author": {
