@@ -1,32 +1,44 @@
 // ============================================================
 // 幸存者小黑（SurvivorBlacky）—— 纯逻辑引擎（决策 #25）
-// 唯一出处：同目录 DESIGN.md v1.0
+// 唯一出处：同目录 DESIGN.md v1.2
 // 无 DOM / 无 React：可注入随机源，node 直跑可测（engine.test.ts）
-// 世界/波次/武器/被动/敌人/经验/升级三选一/计分/事件流全部在此
-// 视觉（粒子/拟声词/摇杆）在 Game.tsx，引擎只产出 GameEvent
+// v1.2：三大关（绿茵牧场/沙漠集市/月光森林）+ 武器进化 + 收割感数值
 // ============================================================
 
 export type Rng = () => number
 
-// —— 常量（DESIGN.md §2） ——
-// 单屏竞技场（DESIGN.md v1.1 §2.1）：画布 1:1 显示全部场地，无相机
+// —— 常量（DESIGN.md v1.2 §2/§3） ——
 export const WORLD_W = 960
 export const WORLD_H = 540
 export const WAVE_COUNT = 10
 export const WAVE_DURATION = 25
-export const MAX_ENEMIES = 240
-export const MAX_GEMS = 500
+export const MAX_ENEMIES = 320
+export const MAX_GEMS = 300
 export const PLAYER_RADIUS = 12
 export const PLAYER_INVULN = 0.75
+export const STAGE_COUNT = 3
 
-export type EnemyKindId = 'pig' | 'chicken' | 'dog' | 'pigeon'
-export type SpawnKind = EnemyKindId | 'minipigeon' | 'boss'
+export type EnemyKindId =
+  | 'pig'
+  | 'chicken'
+  | 'dog'
+  | 'pigeon'
+  | 'camel'
+  | 'scorpion'
+  | 'vulture'
+  | 'cobra'
+  | 'bat'
+  | 'boar'
+  | 'wolf'
+  | 'owl'
+export type SpawnKind =
+  EnemyKindId | 'minipigeon' | 'miniscorpion' | 'minibat' | 'pigeonking' | 'camelking' | 'wolfking'
 export type EnemyTier = 'normal' | 'elite' | 'boss'
 export type WeaponId = 'hairball' | 'yarn' | 'boomerang' | 'laser' | 'fishgun' | 'litterbomb'
 export type PassiveId = 'canned' | 'teaser' | 'fur' | 'claws' | 'coffee' | 'milk' | 'catnip' | 'box'
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'over'
 
-// —— 敌人基础数值（DESIGN.md §2.4） ——
+// —— 敌人基础数值（DESIGN.md v1.2 §2.5/§3.2） ——
 export interface EnemyDef {
   hp: number
   damage: number
@@ -44,7 +56,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
     damage: 8,
     speed: 46,
     radius: 15,
-    xp: 1,
+    xp: 2,
     wobbleFreq: 1.2,
     wobbleAmp: 0.35,
     knockResist: 0.4,
@@ -54,7 +66,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
     damage: 6,
     speed: 82,
     radius: 11,
-    xp: 1,
+    xp: 2,
     wobbleFreq: 5.2,
     wobbleAmp: 0.9,
     knockResist: 0.5,
@@ -64,7 +76,7 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
     damage: 10,
     speed: 104,
     radius: 14,
-    xp: 2,
+    xp: 3,
     wobbleFreq: 2.4,
     wobbleAmp: 0.3,
     knockResist: 0.3,
@@ -74,9 +86,89 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
     damage: 14,
     speed: 34,
     radius: 19,
-    xp: 3,
+    xp: 6,
     wobbleFreq: 1.8,
     wobbleAmp: 0.55,
+    knockResist: 0.5,
+  },
+  camel: {
+    hp: 55,
+    damage: 16,
+    speed: 30,
+    radius: 22,
+    xp: 6,
+    wobbleFreq: 0.8,
+    wobbleAmp: 0.3,
+    knockResist: 0.6,
+  },
+  scorpion: {
+    hp: 12,
+    damage: 7,
+    speed: 100,
+    radius: 10,
+    xp: 2,
+    wobbleFreq: 6,
+    wobbleAmp: 0.8,
+    knockResist: 0.5,
+  },
+  vulture: {
+    hp: 18,
+    damage: 9,
+    speed: 120,
+    radius: 13,
+    xp: 3,
+    wobbleFreq: 3,
+    wobbleAmp: 0.5,
+    knockResist: 0.5,
+  },
+  cobra: {
+    hp: 24,
+    damage: 12,
+    speed: 70,
+    radius: 13,
+    xp: 4,
+    wobbleFreq: 4,
+    wobbleAmp: 0.7,
+    knockResist: 0.5,
+  },
+  bat: {
+    hp: 8,
+    damage: 5,
+    speed: 135,
+    radius: 8,
+    xp: 1,
+    wobbleFreq: 8,
+    wobbleAmp: 1,
+    knockResist: 0.5,
+  },
+  boar: {
+    hp: 60,
+    damage: 15,
+    speed: 42,
+    radius: 20,
+    xp: 6,
+    wobbleFreq: 1,
+    wobbleAmp: 0.3,
+    knockResist: 0.6,
+  },
+  wolf: {
+    hp: 26,
+    damage: 12,
+    speed: 118,
+    radius: 14,
+    xp: 4,
+    wobbleFreq: 2.5,
+    wobbleAmp: 0.4,
+    knockResist: 0.3,
+  },
+  owl: {
+    hp: 34,
+    damage: 10,
+    speed: 38,
+    radius: 15,
+    xp: 5,
+    wobbleFreq: 2,
+    wobbleAmp: 0.5,
     knockResist: 0.5,
   },
   minipigeon: {
@@ -89,93 +181,258 @@ export const ENEMY_DEFS: Record<SpawnKind, EnemyDef> = {
     wobbleAmp: 0.9,
     knockResist: 0.5,
   },
-  boss: {
-    hp: 2800,
+  miniscorpion: {
+    hp: 10,
+    damage: 6,
+    speed: 95,
+    radius: 8,
+    xp: 1,
+    wobbleFreq: 6.5,
+    wobbleAmp: 0.9,
+    knockResist: 0.5,
+  },
+  minibat: {
+    hp: 6,
+    damage: 4,
+    speed: 130,
+    radius: 7,
+    xp: 1,
+    wobbleFreq: 9,
+    wobbleAmp: 1,
+    knockResist: 0.5,
+  },
+  pigeonking: {
+    hp: 3200,
     damage: 24,
     speed: 30,
     radius: 42,
-    xp: 80,
+    xp: 60,
     wobbleFreq: 0.7,
     wobbleAmp: 0.25,
     knockResist: 1,
   },
+  camelking: {
+    hp: 3400,
+    damage: 24,
+    speed: 26,
+    radius: 40,
+    xp: 60,
+    wobbleFreq: 0.6,
+    wobbleAmp: 0.25,
+    knockResist: 1,
+  },
+  wolfking: {
+    hp: 4000,
+    damage: 26,
+    speed: 44,
+    radius: 40,
+    xp: 60,
+    wobbleFreq: 0.9,
+    wobbleAmp: 0.3,
+    knockResist: 1,
+  },
 }
 
-// —— 波次出怪构成（DESIGN.md §2.5；weights 对应 pig/chicken/dog/pigeon） ——
-export interface WaveDef {
-  weights: [number, number, number, number]
-  eliteChance: number
+// —— 大关定义（DESIGN.md v1.2 §3） ——
+export interface StageDef {
+  id: string
+  index: number
+  /** 每波出怪权重（10 波 × 4 敌） */
+  weights: [number, number, number, number][]
+  enemies: EnemyKindId[]
+  eliteChance: number[]
+  boss: SpawnKind
+  bossMinion: SpawnKind
 }
 
-export const WAVE_DEFS: WaveDef[] = [
-  { weights: [1, 0, 0, 0], eliteChance: 0 },
-  { weights: [0.3, 0.5, 0.2, 0], eliteChance: 0 },
-  { weights: [0.3, 0.2, 0.5, 0], eliteChance: 0 },
-  { weights: [0.25, 0.3, 0, 0.45], eliteChance: 0.08 },
-  { weights: [0.25, 0.25, 0.25, 0.25], eliteChance: 0.1 },
-  { weights: [0.4, 0.2, 0.4, 0], eliteChance: 0.12 },
-  { weights: [0, 0.15, 0.25, 0.6], eliteChance: 0.15 },
-  { weights: [0.15, 0.4, 0.45, 0], eliteChance: 0.15 },
-  { weights: [0.25, 0.25, 0.25, 0.25], eliteChance: 0.2 },
-  { weights: [0.3, 0.2, 0.3, 0.2], eliteChance: 0.1 },
+export const STAGE_DEFS: StageDef[] = [
+  {
+    id: 'stage1',
+    index: 1,
+    enemies: ['pig', 'chicken', 'dog', 'pigeon'],
+    weights: [
+      [1, 0, 0, 0],
+      [0.3, 0.5, 0.2, 0],
+      [0.3, 0.2, 0.5, 0],
+      [0.25, 0.3, 0, 0.45],
+      [0.25, 0.25, 0.25, 0.25],
+      [0.4, 0.2, 0.4, 0],
+      [0, 0.15, 0.25, 0.6],
+      [0.15, 0.4, 0.45, 0],
+      [0.25, 0.25, 0.25, 0.25],
+      [0.3, 0.2, 0.3, 0.2],
+    ],
+    eliteChance: [0, 0, 0, 0.08, 0.1, 0.12, 0.15, 0.18, 0.2, 0.22],
+    boss: 'pigeonking',
+    bossMinion: 'minipigeon',
+  },
+  {
+    id: 'stage2',
+    index: 2,
+    enemies: ['camel', 'scorpion', 'vulture', 'cobra'],
+    weights: [
+      [0, 0.6, 0, 0.4],
+      [0.2, 0.5, 0, 0.3],
+      [0, 0.4, 0.4, 0.2],
+      [0.4, 0, 0.25, 0.35],
+      [0.25, 0.25, 0.25, 0.25],
+      [0.25, 0, 0.35, 0.4],
+      [0.5, 0.2, 0, 0.3],
+      [0, 0.4, 0.45, 0.15],
+      [0.25, 0.25, 0.25, 0.25],
+      [0.4, 0.2, 0.2, 0.2],
+    ],
+    eliteChance: [0, 0, 0, 0.08, 0.1, 0.12, 0.15, 0.18, 0.2, 0.22],
+    boss: 'camelking',
+    bossMinion: 'miniscorpion',
+  },
+  {
+    id: 'stage3',
+    index: 3,
+    enemies: ['bat', 'boar', 'wolf', 'owl'],
+    weights: [
+      [0.6, 0, 0.4, 0],
+      [0.5, 0, 0.2, 0.3],
+      [0.3, 0.2, 0.5, 0],
+      [0.25, 0.35, 0, 0.4],
+      [0.25, 0.25, 0.25, 0.25],
+      [0.2, 0.4, 0.4, 0],
+      [0, 0.3, 0.5, 0.2],
+      [0.45, 0.15, 0, 0.4],
+      [0.25, 0.25, 0.25, 0.25],
+      [0.3, 0.3, 0.3, 0.1],
+    ],
+    eliteChance: [0, 0, 0, 0.08, 0.1, 0.12, 0.15, 0.18, 0.2, 0.22],
+    boss: 'wolfking',
+    bossMinion: 'minibat',
+  },
 ]
 
-export const waveBudget = (wave: number): number => 18 + 12 * (wave - 1)
-export const waveSpawnInterval = (wave: number): number => Math.max(0.32, 1.05 - 0.08 * (wave - 1))
+export const waveBudget = (wave: number): number => 24 + 18 * (wave - 1)
+export const waveSpawnInterval = (wave: number): number => Math.max(0.24, 0.9 - 0.07 * (wave - 1))
+// 收割曲线：敌人 HP 增长放缓，玩家 DPS 在中后期反超（DESIGN v1.2 §2.5）
 export const hpScale = (wave: number, minute: number): number =>
-  1 + 0.16 * (wave - 1) + 0.06 * minute
-export const damageScale = (wave: number): number => 1 + 0.04 * (wave - 1)
+  1 + 0.1 * (wave - 1) + 0.04 * minute
+export const damageScale = (wave: number): number => 1 + 0.03 * (wave - 1)
 export const speedScale = (wave: number): number => 1 + 0.02 * (wave - 1)
 
-// —— 武器数值表（DESIGN.md §2.6；每级数组） ——
+// —— 武器数值表（DESIGN.md v1.2 §2.3；每级 ×1.4 递进） ——
 export interface WeaponDef {
   damage: number[]
   cooldown: number[]
   count: number[]
-  /** 附加参数（爆炸半径/目标数/穿透等），按级数组 */
   extra: number[]
 }
 
 export const WEAPON_DEFS: Record<WeaponId, WeaponDef> = {
   hairball: {
-    damage: [14, 18, 25, 34, 46],
+    damage: [14, 20, 28, 40, 56],
     cooldown: [1.1, 1.0, 0.9, 0.8, 0.7],
-    count: [1, 1, 2, 2, 3],
+    count: [1, 2, 2, 3, 3],
     extra: [0, 0, 0, 0, 46],
   },
   yarn: {
-    damage: [9, 13, 17, 23, 23],
+    damage: [9, 13, 18, 26, 36],
     cooldown: [0, 0, 0, 0, 0],
     count: [1, 2, 3, 4, 4],
     extra: [70, 70, 70, 70, 70],
   },
   boomerang: {
-    damage: [16, 21, 28, 37, 50],
+    damage: [16, 22, 31, 43, 60],
     cooldown: [1.6, 1.5, 1.4, 1.3, 1.2],
-    count: [1, 1, 1, 1, 2],
+    count: [1, 1, 1, 2, 2],
     extra: [2, 3, 4, 5, -1],
   },
   laser: {
-    damage: [12, 16, 23, 32, 46],
+    damage: [12, 17, 24, 34, 48],
     cooldown: [1.5, 1.4, 1.3, 1.2, 1.1],
     count: [1, 2, 3, 4, 5],
     extra: [520, 520, 520, 520, 520],
   },
   fishgun: {
-    damage: [7, 9, 12, 15, 20],
+    damage: [7, 10, 14, 20, 28],
     cooldown: [0.42, 0.38, 0.34, 0.3, 0.26],
-    count: [1, 1, 2, 2, 3],
+    count: [1, 2, 2, 3, 3],
     extra: [0, 0, 0, 0, 0],
   },
   litterbomb: {
-    damage: [20, 28, 37, 48, 63],
+    damage: [20, 28, 39, 55, 77],
     cooldown: [3.2, 3.0, 2.8, 2.6, 2.4],
     count: [1, 1, 2, 2, 3],
     extra: [60, 66, 72, 78, 85],
   },
 }
 
+// —— 进化（DESIGN.md v1.2 §2.3：武器满级 + 配对被动满级 = Lv6 进化） ——
+export interface EvolutionDef {
+  weapon: WeaponId
+  passive: PassiveId
+  damage: number
+  cooldown: number
+  count: number
+  extra: number
+  flags: string[]
+}
+
+export const EVOLUTIONS: EvolutionDef[] = [
+  {
+    weapon: 'hairball',
+    passive: 'claws',
+    damage: 110,
+    cooldown: 0.5,
+    count: 6,
+    extra: 80,
+    flags: ['fastTurn'],
+  },
+  {
+    weapon: 'yarn',
+    passive: 'coffee',
+    damage: 55,
+    cooldown: 0,
+    count: 8,
+    extra: 95,
+    flags: ['fastOrbit'],
+  },
+  {
+    weapon: 'boomerang',
+    passive: 'catnip',
+    damage: 95,
+    cooldown: 1.0,
+    count: 4,
+    extra: -1,
+    flags: ['allPierce', 'crit20'],
+  },
+  {
+    weapon: 'laser',
+    passive: 'catnip',
+    damage: 80,
+    cooldown: 1.0,
+    count: 8,
+    extra: 560,
+    flags: ['burn2', 'beamLong'],
+  },
+  {
+    weapon: 'fishgun',
+    passive: 'coffee',
+    damage: 40,
+    cooldown: 0.13,
+    count: 5,
+    extra: 0,
+    flags: ['pierce1'],
+  },
+  {
+    weapon: 'litterbomb',
+    passive: 'box',
+    damage: 120,
+    cooldown: 2.4,
+    count: 5,
+    extra: 120,
+    flags: ['zoneLong'],
+  },
+]
+
 export const WEAPON_MAX_LEVEL = 5
+export const EVOLVED_LEVEL = 6
 export const PASSIVE_MAX_LEVEL = 5
 export const BOMB_FUSE = 0.8
 export const BOMB_ZONE_DPS = 8
@@ -203,7 +460,7 @@ export const BOMB_PLACE_RANGE = 320
 export const ZONE_TICK = 0.5
 export const BOSS_MINION_INTERVAL = 8
 export const BOSS_MINION_COUNT = 3
-export const WAVE10_TRICKLE_INTERVAL = 2.8
+export const WAVE10_TRICKLE_INTERVAL = 2.2
 export const QUOTE_COOLDOWN = 12
 
 // —— 实体 ——
@@ -257,7 +514,6 @@ export interface Projectile {
   vy: number
   damage: number
   radius: number
-  /** -1 = 无限穿透（鱼骨满级） */
   pierce: number
   hitIds: number[]
   life: number
@@ -275,6 +531,9 @@ export interface Projectile {
   zoneTick: number
   fx: number
   fy: number
+  critBonus: number
+  zoneLong: boolean
+  orbitSpeed: number
 }
 
 export interface Gem {
@@ -292,15 +551,15 @@ export interface WeaponState {
   id: WeaponId
   level: number
   cd: number
+  evolved: boolean
 }
 
-// —— 升级选项（DESIGN.md §2.8） ——
 export type UpgradeOption =
   | { kind: 'weapon'; id: WeaponId; nextLevel: number }
   | { kind: 'passive'; id: PassiveId; nextLevel: number }
   | { kind: 'heal'; amount: number }
 
-export type QuoteKey = 'start' | 'boss' | 'lowHp' | 'levelUp' | 'victory'
+export type QuoteKey = 'start' | 'boss' | 'lowHp' | 'levelUp' | 'victory' | 'evolve'
 
 export type GameEvent =
   | { type: 'hit'; x: number; y: number; amount: number; crit: boolean }
@@ -313,6 +572,7 @@ export type GameEvent =
   | { type: 'levelup'; level: number }
   | { type: 'hurt' }
   | { type: 'quote'; key: QuoteKey }
+  | { type: 'evolve'; weapon: WeaponId }
   | { type: 'over'; outcome: 'win' | 'lose'; cause: SpawnKind | 'unknown' }
 
 const defaultRng: Rng = Math.random
@@ -342,21 +602,19 @@ export class SurvivorEngine {
     box: 0,
   }
 
+  stage = 1
   wave = 1
   waveTime = 0
   survived = 0
   kills = 0
   waveCompleted = 0
   bossKilled = 0
-  /** 本局收集小鱼干数（成就用） */
   gemsCollected = 0
-  /** 本局受击次数（成就用） */
   hitsTaken = 0
 
   pendingLevelUps = 0
   pendingChoices: UpgradeOption[][] = []
 
-  // —— 派生属性（computeStats 更新） ——
   speed = 165
   armor = 0
   damageMult = 1
@@ -384,6 +642,10 @@ export class SurvivorEngine {
     this.player = this.freshPlayer()
   }
 
+  get stageDef(): StageDef {
+    return STAGE_DEFS[Math.min(this.stage, STAGE_COUNT) - 1]!
+  }
+
   private freshPlayer(): PlayerState {
     return {
       x: WORLD_W / 2,
@@ -400,13 +662,18 @@ export class SurvivorEngine {
   }
 
   get score(): number {
+    const winBonus = this.outcome === 'win' ? 500 * this.stage : 0
     return (
-      this.kills * 10 + Math.floor(this.survived) + this.waveCompleted * 50 + this.bossKilled * 500
+      this.kills * 10 +
+      Math.floor(this.survived) +
+      this.waveCompleted * 50 +
+      this.bossKilled * 500 +
+      winBonus
     )
   }
 
   get boss(): Enemy | null {
-    return this.enemies.find((e) => e.kind === 'boss') ?? null
+    return this.enemies.find((e) => e.kind === this.stageDef.boss) ?? null
   }
 
   get currentLevel(): number {
@@ -422,10 +689,14 @@ export class SurvivorEngine {
   }
 
   private xpNeeded(): number {
-    return 6 + 4 * (this.levelValue - 1)
+    return 5 + 3 * (this.levelValue - 1)
   }
 
   // ==================== 生命周期 ====================
+
+  setStage(stage: number): void {
+    this.stage = Math.max(1, Math.min(STAGE_COUNT, stage))
+  }
 
   startRun(): void {
     this.phase = 'playing'
@@ -435,7 +706,7 @@ export class SurvivorEngine {
     this.enemies = []
     this.projectiles = []
     this.gems = []
-    this.weapons = [{ id: 'hairball', level: 1, cd: 0.4 }]
+    this.weapons = [{ id: 'hairball', level: 1, cd: 0.4, evolved: false }]
     this.passiveLevels = {
       canned: 0,
       teaser: 0,
@@ -459,7 +730,7 @@ export class SurvivorEngine {
     this.pendingLevelUps = 0
     this.pendingChoices = []
     this.spawnBudget = waveBudget(1)
-    this.spawnTimer = 0.8
+    this.spawnTimer = 0.6
     this.trickleTimer = 0
     this.bossSpawned = false
     this.quoteT = 0
@@ -483,7 +754,6 @@ export class SurvivorEngine {
   }
 
   pause(): void {
-    // 升级浮层打开时战场已冻结，忽略壳层暂停（DESIGN.md §5）
     if (this.phase === 'playing' && this.pendingLevelUps === 0) this.phase = 'paused'
   }
 
@@ -523,22 +793,38 @@ export class SurvivorEngine {
     if (outcome === 'win') this.tryQuote('victory')
   }
 
-  // ==================== 属性计算（DESIGN.md §2.7） ====================
+  // ==================== 属性计算（DESIGN.md v1.2 §2.4） ====================
 
   computeStats(): void {
     const p = this.passiveLevels
-    this.player.maxHp = 100 + 15 * p.canned
-    this.speed = 165 * (1 + 0.07 * p.teaser)
-    this.armor = p.fur
-    this.damageMult = 1 + 0.08 * p.claws
-    this.attackSpeedMult = 1 + 0.08 * p.coffee
-    this.critChance = 0.05 + 0.07 * p.catnip
-    this.pickupRadius = 90 * (1 + 0.22 * p.milk)
-    this.xpMult = 1 + 0.1 * p.box
-    this.regen = p.canned >= PASSIVE_MAX_LEVEL ? 0.5 : 0
+    this.player.maxHp = 100 + 18 * p.canned
+    this.speed = 165 * (1 + 0.08 * p.teaser)
+    this.armor = p.fur + (p.fur >= PASSIVE_MAX_LEVEL ? 1 : 0)
+    this.damageMult = 1 + 0.1 * p.claws + (p.claws >= PASSIVE_MAX_LEVEL ? 0.1 : 0)
+    this.attackSpeedMult = 1 + 0.1 * p.coffee + (p.coffee >= PASSIVE_MAX_LEVEL ? 0.1 : 0)
+    this.critChance = 0.05 + 0.08 * p.catnip
+    this.critMult = p.catnip >= PASSIVE_MAX_LEVEL ? 2.5 : 2
+    this.pickupRadius = p.milk >= PASSIVE_MAX_LEVEL ? 9999 : 90 * (1 + 0.25 * p.milk)
+    this.xpMult = 1 + 0.12 * p.box + (p.box >= PASSIVE_MAX_LEVEL ? 0.12 : 0)
+    this.regen = p.canned >= PASSIVE_MAX_LEVEL ? 1 : 0
   }
 
-  // ==================== 升级三选一（DESIGN.md §2.8） ====================
+  // ==================== 进化（DESIGN.md v1.2 §2.3） ====================
+
+  private tryEvolve(): void {
+    for (const evo of EVOLUTIONS) {
+      const weapon = this.weapons.find((w) => w.id === evo.weapon)
+      if (!weapon || weapon.evolved || weapon.level < WEAPON_MAX_LEVEL) continue
+      if (this.passiveLevels[evo.passive] < PASSIVE_MAX_LEVEL) continue
+      weapon.evolved = true
+      weapon.level = EVOLVED_LEVEL
+      this.emit({ type: 'evolve', weapon: weapon.id })
+      this.tryQuote('evolve')
+      if (weapon.id === 'yarn') this.syncOrbs()
+    }
+  }
+
+  // ==================== 升级三选一（DESIGN.md v1.2 §2.2） ====================
 
   private rollChoices(): UpgradeOption[] {
     const options: UpgradeOption[] = []
@@ -564,8 +850,9 @@ export class SurvivorEngine {
     for (const id of allWeapons) {
       const owned = this.weapons.find((w) => w.id === id)
       if (!owned) options.push({ kind: 'weapon', id, nextLevel: 1 })
-      else if (owned.level < WEAPON_MAX_LEVEL)
+      else if (!owned.evolved && owned.level < WEAPON_MAX_LEVEL) {
         options.push({ kind: 'weapon', id, nextLevel: owned.level + 1 })
+      }
     }
     for (const id of allPassives) {
       const lv = this.passiveLevels[id]
@@ -594,12 +881,10 @@ export class SurvivorEngine {
       picked.push(pool[idx]!)
       pool.splice(idx, 1)
     }
-    // 保底：前 3 次升级至少出现一个新武器选项（新手节奏，DESIGN.md §2.8）
     const unowned = options.filter((o) => o.kind === 'weapon' && o.nextLevel === 1)
     const hasNewWeapon = picked.some((o) => o.kind === 'weapon' && o.nextLevel === 1)
     if (this.levelValue <= 3 && !hasNewWeapon && unowned.length > 0) {
       const replacement = unowned[Math.floor(this.random() * unowned.length)]!
-      // 替换最后一项；跳过已是新武器的项
       for (let i = picked.length - 1; i >= 0; i--) {
         const pi = picked[i]!
         if (pi.kind === 'weapon' && pi.nextLevel === 1) continue
@@ -623,16 +908,15 @@ export class SurvivorEngine {
     if (option.kind === 'weapon') {
       const owned = this.weapons.find((w) => w.id === option.id)
       if (owned) owned.level = option.nextLevel
-      else this.weapons.push({ id: option.id, level: option.nextLevel, cd: 0.3 })
-      // 毛线球环：数量随等级即时同步
+      else this.weapons.push({ id: option.id, level: option.nextLevel, cd: 0.3, evolved: false })
       this.syncOrbs()
     } else if (option.kind === 'passive') {
       const before = this.passiveLevels[option.id]
       this.passiveLevels[option.id] = option.nextLevel
       const gained = option.nextLevel - before
       if (option.id === 'canned') {
-        this.player.maxHp += 15 * gained
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + 15 * gained)
+        this.player.maxHp += 18 * gained
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + 18 * gained)
       }
       this.computeStats()
     } else {
@@ -641,25 +925,30 @@ export class SurvivorEngine {
         this.player.hp + option.amount * this.player.maxHp,
       )
     }
+    this.tryEvolve()
   }
 
   private syncOrbs(): void {
     const yarnWeapon = this.weapons.find((w) => w.id === 'yarn')
-    const want = yarnWeapon ? WEAPON_DEFS.yarn.count[yarnWeapon.level - 1]! : 0
+    const want = yarnWeapon
+      ? yarnWeapon.evolved
+        ? EVOLUTIONS[1]!.count
+        : WEAPON_DEFS.yarn.count[yarnWeapon.level - 1]!
+      : 0
     const orbs = this.projectiles.filter((p) => p.kind === 'orbit')
-    // 移除多余
     while (orbs.length > want) {
       const last = orbs.pop()
       if (last) this.projectiles.splice(this.projectiles.indexOf(last), 1)
     }
-    // 补充缺失
     while (orbs.length < want) {
-      const base = WEAPON_DEFS.yarn.damage[yarnWeapon ? yarnWeapon.level - 1 : 0]!
-      const orb = this.makeProjectile('yarn', 'orbit', base, 8, -1, 0)
+      const yw = yarnWeapon ?? { id: 'yarn' as WeaponId, level: 1, cd: 0, evolved: false }
+      const stats = this.weaponStats(yw)
+      const orb = this.makeProjectile('yarn', 'orbit', stats.damage, 8, -1, 0)
+      orb.orbitR = stats.extra
+      orb.orbitSpeed = yw.evolved ? 4.2 : ORBIT_SPEED
       this.projectiles.push(orb)
       orbs.push(orb)
     }
-    // 角度均分（含已有）
     if (orbs.length > 0) {
       for (let i = 0; i < orbs.length; i++) {
         orbs[i]!.angle = (i / orbs.length) * Math.PI * 2
@@ -667,7 +956,36 @@ export class SurvivorEngine {
     }
   }
 
-  // ==================== 主循环（DESIGN.md §2） ====================
+  /** 武器当前数值（进化态取 EVOLUTIONS 表，DESIGN v1.2 §2.3） */
+  weaponStats(w: WeaponState): {
+    damage: number
+    cooldown: number
+    count: number
+    extra: number
+    flags: string[]
+  } {
+    if (w.evolved) {
+      const evo = EVOLUTIONS.find((e) => e.weapon === w.id)!
+      return {
+        damage: evo.damage,
+        cooldown: evo.cooldown,
+        count: evo.count,
+        extra: evo.extra,
+        flags: evo.flags,
+      }
+    }
+    const def = WEAPON_DEFS[w.id]
+    const idx = Math.max(0, Math.min(WEAPON_MAX_LEVEL - 1, w.level - 1))
+    return {
+      damage: def.damage[idx]!,
+      cooldown: def.cooldown[idx]!,
+      count: def.count[idx]!,
+      extra: def.extra[idx]!,
+      flags: [],
+    }
+  }
+
+  // ==================== 主循环 ====================
 
   tick(dt: number): void {
     if (dt <= 0) return
@@ -676,7 +994,6 @@ export class SurvivorEngine {
     this.survived += dt
     this.quoteT = Math.max(0, this.quoteT - dt)
 
-    // 波次推进
     if (this.wave < WAVE_COUNT) {
       this.waveTime += dt
       if (this.waveTime >= WAVE_DURATION) {
@@ -688,11 +1005,10 @@ export class SurvivorEngine {
       }
     }
 
-    // 第 10 波 BOSS 入场（DESIGN.md §2.2/2.4）
     if (this.wave >= WAVE_COUNT && !this.bossSpawned) {
       this.bossSpawned = true
-      this.spawnEnemy('boss', false)
-      for (let i = 0; i < 10; i++) this.spawnEnemy('pigeon', false)
+      this.spawnEnemy(this.stageDef.boss, false)
+      for (let i = 0; i < 10; i++) this.spawnEnemy(this.stageDef.enemies[0]!, false)
       this.emit({ type: 'boss' })
       this.tryQuote('boss')
     }
@@ -704,13 +1020,12 @@ export class SurvivorEngine {
     this.updateProjectiles(dt)
     this.updateGems(dt)
 
-    // 胜利/失败判定
     if (this.phase === 'playing') {
       if (this.player.hp <= 0) {
         this.player.hp = 0
         this.finish('lose', this.deathCause)
       } else if (this.bossKilled > 0) {
-        this.finish('win', 'boss')
+        this.finish('win', this.stageDef.boss)
       }
     }
   }
@@ -744,21 +1059,20 @@ export class SurvivorEngine {
     }
   }
 
-  // ==================== 出怪（DESIGN.md §2.2/2.5） ====================
+  // ==================== 出怪（DESIGN.md v1.2 §2.5/§3.3） ====================
 
   private pickSpawnKind(): SpawnKind {
-    const def = WAVE_DEFS[Math.min(this.wave, WAVE_COUNT) - 1]!
     if (this.wave >= WAVE_COUNT) {
-      return this.trickleAlternate ? 'pig' : 'chicken'
+      return this.trickleAlternate ? this.stageDef.enemies[0]! : this.stageDef.enemies[1]!
     }
-    const total = def.weights[0] + def.weights[1] + def.weights[2] + def.weights[3]
+    const weights = this.stageDef.weights[Math.min(this.wave, WAVE_COUNT) - 1]!
+    const total = weights[0] + weights[1] + weights[2] + weights[3]
     let roll = this.random() * total
-    const kinds: EnemyKindId[] = ['pig', 'chicken', 'dog', 'pigeon']
     for (let i = 0; i < 4; i++) {
-      roll -= def.weights[i]
-      if (roll <= 0) return kinds[i]!
+      roll -= weights[i]
+      if (roll <= 0) return this.stageDef.enemies[i]!
     }
-    return 'pig'
+    return this.stageDef.enemies[0]!
   }
 
   private spawnPosition(): { x: number; y: number } {
@@ -771,18 +1085,19 @@ export class SurvivorEngine {
     return { x: -m, y: WORLD_H * t }
   }
 
-  private spawnEnemy(kind: SpawnKind, rollElite: boolean): Enemy {
+  /** 公开出怪入口（测试/调试用；正式流程经 updateSpawning 调用） */
+  spawnEnemy(kind: SpawnKind, rollElite: boolean): Enemy {
     const def = ENEMY_DEFS[kind]
     const minute = Math.floor(this.survived / 60)
     const tier: EnemyTier =
-      kind === 'boss'
+      kind === this.stageDef.boss
         ? 'boss'
-        : rollElite && this.random() < WAVE_DEFS[Math.min(this.wave, WAVE_COUNT) - 1]!.eliteChance
+        : rollElite &&
+            this.random() < this.stageDef.eliteChance[Math.min(this.wave, WAVE_COUNT) - 1]!
           ? 'elite'
           : 'normal'
     const elite = tier === 'elite'
-    const isBoss = kind === 'boss'
-    // BOSS 使用基础值，不参与波次缩放（DESIGN.md §2.4 数值即第 10 波数值）
+    const isBoss = kind === this.stageDef.boss
     const hp = isBoss ? def.hp : def.hp * hpScale(this.wave, minute) * (elite ? 2.6 : 1)
     const pos = this.spawnPosition()
     const enemy: Enemy = {
@@ -860,7 +1175,6 @@ export class SurvivorEngine {
       const dist = Math.hypot(dx, dy) || 1
       const dirX = dx / dist
       const dirY = dy / dist
-      // 垂直摇摆（性格化走位，DESIGN.md §2.4）
       const wobble =
         Math.sin(this.survived * ENEMY_DEFS[e.kind].wobbleFreq + e.wobbleSeed) *
         ENEMY_DEFS[e.kind].wobbleAmp
@@ -873,21 +1187,19 @@ export class SurvivorEngine {
       e.vy *= Math.max(0, 1 - 8 * dt)
       e.facing = Math.atan2(dirY, dirX)
 
-      // BOSS 召唤迷你鸽（DESIGN.md §2.4）
-      if (e.kind === 'boss') {
+      if (e.kind === this.stageDef.boss) {
         e.bossTimer -= dt
         if (e.bossTimer <= 0) {
           e.bossTimer = BOSS_MINION_INTERVAL
           for (let i = 0; i < BOSS_MINION_COUNT; i++) {
             const a = this.random() * Math.PI * 2
-            const m = this.spawnEnemy('minipigeon', false)
+            const m = this.spawnEnemy(this.stageDef.bossMinion, false)
             m.x = e.x + Math.cos(a) * (e.radius + 26)
             m.y = e.y + Math.sin(a) * (e.radius + 26)
           }
         }
       }
 
-      // 接触伤害（DESIGN.md §2.3 无敌帧）
       const hitDist = e.radius + PLAYER_RADIUS
       if (dist < hitDist && p.invuln <= 0 && p.hp > 0) {
         const amount = Math.max(1, Math.round(e.damage - this.armor))
@@ -895,7 +1207,6 @@ export class SurvivorEngine {
         this.hitsTaken++
         p.invuln = PLAYER_INVULN
         p.hurtT = 0.25
-        // 击退玩家（瞬时）与敌人（BOSS 免疫）
         p.x += dirX * 34
         p.y += dirY * 34
         const resist = ENEMY_DEFS[e.kind].knockResist
@@ -940,25 +1251,23 @@ export class SurvivorEngine {
   private killEnemy(e: Enemy): void {
     this.kills++
     this.emit({ type: 'kill', x: e.x, y: e.y, kind: e.kind, tier: e.tier })
-    if (e.kind === 'boss') this.bossKilled++
-    // 经验小鱼干（DESIGN.md §2.8）
-    for (let i = 0; i < e.xp; i++) {
-      if (this.gems.length >= MAX_GEMS) {
-        const oldest = this.gems.shift()
-        if (oldest) this.gainXp(oldest.value)
-      }
-      const a = this.random() * Math.PI * 2
-      const sp = 40 + this.random() * 60
-      this.gems.push({
-        x: e.x,
-        y: e.y,
-        value: 1,
-        vx: Math.cos(a) * sp,
-        vy: Math.sin(a) * sp,
-        magnet: false,
-        t: 0,
-      })
+    if (e.kind === this.stageDef.boss) this.bossKilled++
+    // 大珠制：每敌 1 颗小鱼干，价值 = 敌人经验（DESIGN v1.2 §2.2）
+    if (this.gems.length >= MAX_GEMS) {
+      const oldest = this.gems.shift()
+      if (oldest) this.gainXp(oldest.value)
     }
+    const a = this.random() * Math.PI * 2
+    const sp = 40 + this.random() * 60
+    this.gems.push({
+      x: e.x,
+      y: e.y,
+      value: e.xp,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp,
+      magnet: false,
+      t: 0,
+    })
   }
 
   private gainXp(value: number): void {
@@ -981,7 +1290,7 @@ export class SurvivorEngine {
     }
   }
 
-  // ==================== 武器系统（DESIGN.md §2.6） ====================
+  // ==================== 武器系统（DESIGN.md v1.2 §2.3） ====================
 
   private nearestEnemy(
     x: number,
@@ -1002,16 +1311,21 @@ export class SurvivorEngine {
     return best
   }
 
+  private critFor(critBonus: number): boolean {
+    return this.random() < this.critChance + critBonus
+  }
+
   private updateWeapons(dt: number): void {
     for (const w of this.weapons) {
       w.cd -= dt
       if (w.cd > 0) continue
-      const def = WEAPON_DEFS[w.id]
-      const idx = w.level - 1
-      const damage = def.damage[idx]! * this.damageMult
-      const count = def.count[idx]!
-      const extra = def.extra[idx]!
-      const baseCd = def.cooldown[idx]! / this.attackSpeedMult
+      const stats = this.weaponStats(w)
+      const damage = stats.damage * this.damageMult
+      const count = stats.count
+      const extra = stats.extra
+      const flags = stats.flags
+      const baseCd = (stats.cooldown || 0.0001) / this.attackSpeedMult
+      const critBonus = flags.includes('crit20') ? 0.2 : 0
 
       switch (w.id) {
         case 'hairball': {
@@ -1020,7 +1334,7 @@ export class SurvivorEngine {
             for (let i = 0; i < count; i++) {
               const ang =
                 Math.atan2(target.y - this.player.y, target.x - this.player.x) +
-                (i - (count - 1) / 2) * 0.22
+                (i - (count - 1) / 2) * 0.18
               const proj = this.makeProjectile(
                 'hairball',
                 'homing',
@@ -1031,9 +1345,9 @@ export class SurvivorEngine {
               )
               proj.vx = Math.cos(ang) * HAIRBALL_SPEED
               proj.vy = Math.sin(ang) * HAIRBALL_SPEED
-              proj.turnRate = HAIRBALL_TURN
+              proj.turnRate = flags.includes('fastTurn') ? HAIRBALL_TURN * 1.6 : HAIRBALL_TURN
               proj.life = HAIRBALL_LIFE
-              proj.boomRadius = idx === 4 ? extra : 0
+              proj.boomRadius = extra > 0 ? extra : 0
               this.projectiles.push(proj)
             }
             w.cd = baseCd
@@ -1041,7 +1355,6 @@ export class SurvivorEngine {
           break
         }
         case 'yarn': {
-          // 轨道球由 syncOrbs 维护，此处只防空转
           w.cd = 999
           break
         }
@@ -1050,13 +1363,13 @@ export class SurvivorEngine {
           if (target) {
             const baseAng = Math.atan2(target.y - this.player.y, target.x - this.player.x)
             for (let i = 0; i < count; i++) {
-              const ang = baseAng + (i - (count - 1) / 2) * 0.3
+              const ang = baseAng + (i - (count - 1) / 2) * 0.25
               const proj = this.makeProjectile(
                 'boomerang',
                 'boomerang',
                 damage,
                 BOOMERANG_RADIUS,
-                idx === 4 ? -1 : extra,
+                extra < 0 ? -1 : extra,
                 ang,
               )
               proj.vx = Math.cos(ang) * BOOMERANG_SPEED
@@ -1065,6 +1378,7 @@ export class SurvivorEngine {
               proj.traveled = 0
               proj.phase = 'out'
               proj.life = 2.2
+              proj.critBonus = critBonus
               this.projectiles.push(proj)
             }
             w.cd = baseCd
@@ -1081,14 +1395,13 @@ export class SurvivorEngine {
             seen.push(t.id)
           }
           for (const t of targets) {
-            const crit = this.random() < this.critChance
+            const crit = this.critFor(critBonus)
             const dmg = damage * (crit ? this.critMult : 1)
             this.damageEnemy(t, dmg, crit, t.x - this.player.x, t.y - this.player.y, 60)
-            if (idx === 4) {
-              t.burnDps = LASER_BURN_DPS
-              t.burnT = LASER_BURN_TIME
+            if (w.level >= WEAPON_MAX_LEVEL) {
+              t.burnDps = flags.includes('burn2') ? LASER_BURN_DPS * 2 : LASER_BURN_DPS
+              t.burnT = flags.includes('burn2') ? LASER_BURN_TIME * 1.5 : LASER_BURN_TIME
             }
-            // 光束视觉弹（纯表现，无碰撞）
             const beam = this.makeProjectile(
               'laser',
               'beam',
@@ -1097,7 +1410,7 @@ export class SurvivorEngine {
               0,
               Math.atan2(t.y - this.player.y, t.x - this.player.x),
             )
-            beam.life = 0.16
+            beam.life = flags.includes('beamLong') ? 0.3 : 0.16
             beam.fx = t.x
             beam.fy = t.y
             this.projectiles.push(beam)
@@ -1116,7 +1429,7 @@ export class SurvivorEngine {
                 'straight',
                 damage,
                 FISHGUN_RADIUS,
-                0,
+                flags.includes('pierce1') ? 1 : 0,
                 ang,
               )
               proj.vx = Math.cos(ang) * FISHGUN_SPEED
@@ -1146,7 +1459,8 @@ export class SurvivorEngine {
             bomb.y = Math.max(20, Math.min(WORLD_H - 20, by))
             bomb.fuse = BOMB_FUSE
             bomb.boomRadius = extra
-            bomb.spawnZone = idx === 4
+            bomb.spawnZone = w.level >= WEAPON_MAX_LEVEL
+            bomb.zoneLong = flags.includes('zoneLong')
             this.projectiles.push(bomb)
           }
           w.cd = baseCd
@@ -1191,6 +1505,9 @@ export class SurvivorEngine {
       zoneTick: 0,
       fx: 0,
       fy: 0,
+      critBonus: 0,
+      zoneLong: false,
+      orbitSpeed: ORBIT_SPEED,
     }
   }
 
@@ -1224,8 +1541,7 @@ export class SurvivorEngine {
           proj.x += proj.vx * dt
           proj.y += proj.vy * dt
           this.collide(proj, (e, d, dx, dy) => {
-            this.damageEnemy(e, d, this.random() < this.critChance, dx, dy, 90)
-            // 满级命中爆炸（DESIGN.md §2.6，除被击目标外的 AoE）
+            this.damageEnemy(e, d, this.critFor(proj.critBonus), dx, dy, 90)
             if (proj.boomRadius > 0 && e.hp > 0) {
               this.emit({ type: 'boom', x: proj.x, y: proj.y, radius: proj.boomRadius })
               for (const o of this.enemies) {
@@ -1245,7 +1561,7 @@ export class SurvivorEngine {
           proj.x += proj.vx * dt
           proj.y += proj.vy * dt
           this.collide(proj, (e, d, dx, dy) => {
-            this.damageEnemy(e, d, this.random() < this.critChance, dx, dy, 60)
+            this.damageEnemy(e, d, this.critFor(proj.critBonus), dx, dy, 60)
           })
           break
         }
@@ -1267,7 +1583,7 @@ export class SurvivorEngine {
             proj.y += (dy / dist) * BOOMERANG_RETURN_SPEED * dt
           }
           this.collide(proj, (e, d, dx, dy) => {
-            this.damageEnemy(e, d, this.random() < this.critChance, dx, dy, 110)
+            this.damageEnemy(e, d, this.critFor(proj.critBonus), dx, dy, 110)
           })
           break
         }
@@ -1277,7 +1593,7 @@ export class SurvivorEngine {
             proj.hitWindow = ORBIT_HIT_WINDOW
             proj.hitIds = []
           }
-          proj.angle += ORBIT_SPEED * dt
+          proj.angle += proj.orbitSpeed * dt
           proj.x = p.x + Math.cos(proj.angle) * proj.orbitR
           proj.y = p.y - 6 + Math.sin(proj.angle) * proj.orbitR
           for (const e of this.enemies) {
@@ -1287,7 +1603,7 @@ export class SurvivorEngine {
             const dy = e.y - proj.y
             if (dx * dx + dy * dy < rr * rr) {
               proj.hitIds.push(e.id)
-              const crit = this.random() < this.critChance
+              const crit = this.critFor(proj.critBonus)
               this.damageEnemy(
                 e,
                 proj.damage * this.damageMult * (crit ? this.critMult : 1),
@@ -1301,7 +1617,6 @@ export class SurvivorEngine {
           break
         }
         case 'beam': {
-          // 纯视觉，等待寿命结束
           break
         }
         case 'bomb': {
@@ -1346,7 +1661,7 @@ export class SurvivorEngine {
       const dx = e.x - proj.x
       const dy = e.y - proj.y
       if (dx * dx + dy * dy < rr * rr) {
-        const crit = this.random() < this.critChance
+        const crit = this.critFor(proj.critBonus)
         const dmg = proj.damage * (crit ? this.critMult : 1)
         proj.hitIds.push(e.id)
         onHit(e, dmg, dx, dy)
@@ -1369,7 +1684,7 @@ export class SurvivorEngine {
       const dx = e.x - proj.x
       const dy = e.y - proj.y
       if (dx * dx + dy * dy < rr * rr) {
-        this.damageEnemy(e, proj.damage, this.random() < this.critChance, dx, dy, 150)
+        this.damageEnemy(e, proj.damage, this.critFor(proj.critBonus), dx, dy, 150)
       }
     }
     if (proj.spawnZone) {
@@ -1377,14 +1692,14 @@ export class SurvivorEngine {
       zone.x = proj.x
       zone.y = proj.y
       zone.dps = BOMB_ZONE_DPS
-      zone.life = BOMB_ZONE_LIFE
+      zone.life = proj.zoneLong ? 8 : BOMB_ZONE_LIFE
       zone.zoneTick = 0
       this.projectiles.push(zone)
       this.emit({ type: 'zone', x: proj.x, y: proj.y })
     }
   }
 
-  // ==================== 经验小鱼干（DESIGN.md §2.8） ====================
+  // ==================== 经验小鱼干（DESIGN.md v1.2 §2.2 大珠制） ====================
 
   private updateGems(dt: number): void {
     const p = this.player

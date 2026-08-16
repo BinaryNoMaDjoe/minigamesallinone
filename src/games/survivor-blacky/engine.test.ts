@@ -143,12 +143,12 @@ console.log('--- 被动叠加与属性计算 ---')
   e.passiveLevels.coffee = 1
   e.passiveLevels.milk = 3
   e.computeStats()
-  assert(Math.abs(e.damageMult - 1.16) < 1e-9, '爪磨器 2 级 → 伤害 116%')
-  assert(Math.abs(e.attackSpeedMult - 1.08) < 1e-9, '咖啡 1 级 → 攻速 108%')
-  assert(Math.abs(e.pickupRadius - 90 * 1.66) < 1e-9, '牛奶 3 级 → 拾取半径 166%')
+  assert(Math.abs(e.damageMult - 1.2) < 1e-9, '爪磨器 2 级 → 伤害 120%')
+  assert(Math.abs(e.attackSpeedMult - 1.1) < 1e-9, '咖啡 1 级 → 攻速 110%')
+  assert(Math.abs(e.pickupRadius - 90 * 1.75) < 1e-9, '牛奶 3 级 → 拾取半径 175%')
   e.passiveLevels.canned = 2
   e.computeStats()
-  assert(e.player.maxHp === 130, '猫罐头 2 级 → 生命上限 130')
+  assert(e.player.maxHp === 136, '猫罐头 2 级 → 生命上限 136')
 }
 
 console.log('--- 受伤无敌帧 ---')
@@ -251,7 +251,7 @@ console.log('--- 第 10 波 BOSS 与胜利路径 ---')
     e.drainEvents().some((x) => x.type === 'boss'),
     'BOSS 事件已发出',
   )
-  assert(boss!.hp === 2800 && boss!.maxHp === 2800, 'BOSS 基础 HP 2800（不参与波次缩放）')
+  assert(boss!.hp === 3200 && boss!.maxHp === 3200, '鸽子王基础 HP 3200（不参与波次缩放）')
   // 拉开距离，把 BOSS 打到 1 血，让武器收割
   e.player.x = WORLD_W / 2
   e.player.y = 60
@@ -263,7 +263,7 @@ console.log('--- 第 10 波 BOSS 与胜利路径 ---')
   while (e.phase === 'playing' && guard < 60 * 20) {
     while (e.pendingLevelUps > 0) e.chooseUpgrade(0)
     // 确定性收割：清场只留 BOSS 贴脸，武器必中
-    e.enemies = e.enemies.filter((x) => x.kind === 'boss')
+    e.enemies = e.enemies.filter((x) => x.kind === e.stageDef.boss)
     e.player.hp = 99999
     boss!.hp = Math.min(boss!.hp, 1)
     boss!.x = e.player.x + 120
@@ -360,6 +360,85 @@ function autopilotMove(e: SurvivorEngine): void {
   } else {
     e.setMove(0, 0)
   }
+}
+
+console.log('--- 大关切换（DESIGN v1.2 §3） ---')
+{
+  const e = new SurvivorEngine({ random: lcg(30) })
+  e.setStage(2)
+  e.startRun()
+  for (let i = 0; i < 60 * 5; i++) {
+    while (e.pendingLevelUps > 0) e.chooseUpgrade(0)
+    e.tick(DT)
+  }
+  assert(e.stage === 2, '第 2 大关生效')
+  assert(
+    e.enemies.every((x) => ['camel', 'scorpion', 'vulture', 'cobra'].includes(x.kind)),
+    '第 2 大关只出沙漠敌人（前 3 波）',
+  )
+  const e3 = new SurvivorEngine({ random: lcg(31) })
+  e3.setStage(3)
+  e3.startRun()
+  for (let i = 0; i < 60 * 3; i++) {
+    while (e3.pendingLevelUps > 0) e3.chooseUpgrade(0)
+    e3.tick(DT)
+  }
+  assert(
+    e3.enemies.every((x) => ['bat', 'boar', 'wolf', 'owl'].includes(x.kind)),
+    '第 3 大关只出森林敌人（前 3 波）',
+  )
+}
+
+console.log('--- 武器进化（DESIGN v1.2 §2.3） ---')
+{
+  const e = new SurvivorEngine({ random: lcg(32) })
+  e.startRun()
+  // 直接置满武器与配对被动，再触发一次升级结算
+  e.weapons = [{ id: 'hairball', level: 5, cd: 0, evolved: false }]
+  e.passiveLevels.claws = 5
+  e.computeStats()
+  const before = e.weapons[0]!.evolved
+  assert(!before, '进化前未标记')
+  e.chooseUpgrade(-1) // 无效选择不应崩
+  // 通过应用升级触发 tryEvolve：手动调用公开路径 —— 使用内部升级
+  e.pendingLevelUps = 1
+  e.pendingChoices = [[{ kind: 'heal', amount: 0.35 }]]
+  e.chooseUpgrade(0)
+  assert(e.weapons[0]!.evolved, '满级武器 + 满级被动 → 进化')
+  assert(e.weapons[0]!.level === 6, '进化等级为 6')
+  const stats = e.weaponStats(e.weapons[0]!)
+  assert(stats.damage === 110 && stats.count === 6, '进化数值 = 猫毛导弹雨（伤 110 × 6 发）')
+  const evts = e.drainEvents()
+  assert(
+    evts.some((x) => x.type === 'evolve' && x.weapon === 'hairball'),
+    '进化事件已发出',
+  )
+  // 未配对不应进化
+  const e2 = new SurvivorEngine({ random: lcg(33) })
+  e2.startRun()
+  e2.weapons = [{ id: 'hairball', level: 5, cd: 0, evolved: false }]
+  e2.pendingLevelUps = 1
+  e2.pendingChoices = [[{ kind: 'heal', amount: 0.35 }]]
+  e2.chooseUpgrade(0)
+  assert(!e2.weapons[0]!.evolved, '缺少配对被动不进化')
+}
+
+console.log('--- 经验曲线与收割数值（DESIGN v1.2 §2.2） ---')
+{
+  const e = new SurvivorEngine({ random: lcg(34) })
+  e.startRun()
+  assert(e.xpNext === 5, 'Lv1 → 5 经验（前快后稳）')
+  // 一只猪 2 经验（大珠制）
+  e.enemies = []
+  const piggy = e.spawnEnemy('pig', false)
+  piggy.x = e.player.x + 40
+  piggy.y = e.player.y
+  assert(e.gems.length === 0, '击杀前无鱼干')
+  piggy.hp = 0.5
+  for (let i = 0; i < 60 * 4; i++) e.tick(DT)
+  // 大珠掉落后被磁吸收集（gems 可能已清空）
+  assert(e.gemsCollected === 1, '每敌只掉 1 颗大珠')
+  assert(Math.abs(e.xp - 2) < 1e-9, '大珠价值 = 敌经验（猪 = 2）')
 }
 
 console.log('--- 长时模拟无 NaN（自动选升级 + 拾取走位） ---')

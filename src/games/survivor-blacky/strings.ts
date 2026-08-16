@@ -269,6 +269,45 @@ export const survivorbkStrings = {
     en: 'Take zero hits during wave 1.',
   } satisfies LocalizedText,
 
+  // —— 大关（DESIGN.md v1.2 §3） ——
+  stage1Name: { zh: '绿茵牧场', en: 'GREEN PASTURE' } satisfies LocalizedText,
+  stage2Name: { zh: '沙漠集市', en: 'DESERT BAZAAR' } satisfies LocalizedText,
+  stage3Name: { zh: '月光森林', en: 'MOONLIT FOREST' } satisfies LocalizedText,
+  stageSelect: { zh: '选择关卡', en: 'SELECT STAGE' } satisfies LocalizedText,
+  stageLocked: { zh: '未解锁', en: 'LOCKED' } satisfies LocalizedText,
+  stageUnlockHint: {
+    zh: '通关上一大关解锁',
+    en: 'Clear the previous stage to unlock',
+  } satisfies LocalizedText,
+  stageCleared: { zh: '已通关', en: 'CLEARED' } satisfies LocalizedText,
+  stageUnlocked: { zh: '新大关解锁！', en: 'NEW STAGE UNLOCKED!' } satisfies LocalizedText,
+  enemy_camel: { zh: '骆驼', en: 'CAMEL' } satisfies LocalizedText,
+  enemy_scorpion: { zh: '蝎子', en: 'SCORPION' } satisfies LocalizedText,
+  enemy_vulture: { zh: '秃鹫', en: 'VULTURE' } satisfies LocalizedText,
+  enemy_cobra: { zh: '眼镜蛇', en: 'COBRA' } satisfies LocalizedText,
+  enemy_bat: { zh: '蝙蝠', en: 'BAT' } satisfies LocalizedText,
+  enemy_boar: { zh: '野猪', en: 'BOAR' } satisfies LocalizedText,
+  enemy_wolf: { zh: '狼', en: 'WOLF' } satisfies LocalizedText,
+  enemy_owl: { zh: '猫头鹰', en: 'OWL' } satisfies LocalizedText,
+  enemy_miniscorpion: { zh: '小蝎子', en: 'MINI SCORPION' } satisfies LocalizedText,
+  enemy_minibat: { zh: '小蝙蝠', en: 'MINI BAT' } satisfies LocalizedText,
+  enemy_camelking: { zh: '骆驼王', en: 'CAMEL KING' } satisfies LocalizedText,
+  enemy_wolfking: { zh: '狼王', en: 'WOLF KING' } satisfies LocalizedText,
+
+  // —— 进化（DESIGN.md v1.2 §2.3） ——
+  evolveTitle: { zh: '进化！', en: 'EVOLVED!' } satisfies LocalizedText,
+  evolve_hairball: { zh: '猫毛导弹雨', en: 'HAIRBALL STORM' } satisfies LocalizedText,
+  evolve_yarn: { zh: '毛线风暴', en: 'YARN TEMPEST' } satisfies LocalizedText,
+  evolve_boomerang: { zh: '鱼骨龙卷', en: 'FISHBONE TORNADO' } satisfies LocalizedText,
+  evolve_laser: { zh: '死亡凝视', en: 'DEATH STARE' } satisfies LocalizedText,
+  evolve_fishgun: { zh: '鱼干风暴', en: 'FISH STORM' } satisfies LocalizedText,
+  evolve_litterbomb: { zh: '猫砂地狱', en: 'LITTER HELL' } satisfies LocalizedText,
+  quoteEvolve: {
+    zh: '这股力量……喵呜嗷！',
+    en: 'This power... MEOWCH!',
+  } satisfies LocalizedText,
+  comboKill: { zh: '连杀', en: 'COMBO' } satisfies LocalizedText,
+
   // —— 主角台词（DESIGN.md §2.10） ——
   quoteStart: {
     zh: '今天也要努力活到吃晚饭喵！',

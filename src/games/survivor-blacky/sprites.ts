@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 幸存者小黑：像素精灵资产库（唯一出处 DESIGN.md v1.1 §4）
 // Q 版原型参考：罗小黑战记（黑猫）· 卡通粉猪 · 卡通小鸡 · 柴犬 · 广场肥鸽
 // 全部为代码手绘像素网格：'.'=透明，其余字符见 PIXEL_PALETTE
@@ -35,6 +35,15 @@ export const PIXEL_PALETTE: Record<string, string> = {
   F: '#e8d59c', // 沙土路
   L: '#b9c0c8', // 石头
   V: '#8a5a2b', // 树干
+  D: '#d9b068', // 骆驼黄
+  d: '#b8924e', // 骆驼黄暗
+  Z: '#c94f3d', // 蝎子红
+  z: '#a63a2c', // 蝎子红暗
+  H: '#4a4550', // 秃鹫暗灰
+  h: '#5c5663', // 秃鹫灰
+  I: '#57a83f', // 眼镜蛇绿
+  i: '#3f7d2e', // 眼镜蛇绿暗
+  u: '#6f00b3', // 蝙蝠紫暗
 }
 
 export type Sprite = string[]
@@ -737,3 +746,312 @@ export const SPR_ICON_ACHIEVEMENT: Record<string, Sprite> = {
     '..........',
   ],
 }
+
+// ================= 大关 2：沙漠集市敌人 =================
+// 骆驼（18×16，双驼峰，朝右）
+export const SPR_CAMEL_1: Sprite = [
+  '..........K.......',
+  '.........KDK......',
+  '.........KDDK.....',
+  '.........KDDDK....',
+  '........KDKDDK....',
+  '.........KDDK.....',
+  '..........KDDK....',
+  '..........KDDK....',
+  '...KK.....KDDK....',
+  '..KDDK...KDDDDK...',
+  '.KDDDDKKKDDDDDDK..',
+  'KDDDDDDDDDDDDDDDDK',
+  'KDDDDDDDDDDDDDDDDK',
+  'KddDDDDDDDDDDDDddK',
+  '.KddDDDDDDDDDDddK.',
+  '..KKKK..KK..KKKK..',
+]
+export const SPR_CAMEL_2: Sprite = [
+  '..........K.......',
+  '.........KDK......',
+  '.........KDDK.....',
+  '.........KDDDK....',
+  '........KDKDDK....',
+  '.........KDDK.....',
+  '..........KDDK....',
+  '..........KDDK....',
+  '...KK.....KDDK....',
+  '..KDDK...KDDDDK...',
+  '.KDDDDKKKDDDDDDK..',
+  'KDDDDDDDDDDDDDDDDK',
+  'KDDDDDDDDDDDDDDDDK',
+  'KddDDDDDDDDDDDDddK',
+  '.KddDDDDDDDDDDddK.',
+  '..KK..KK....KKKK..',
+]
+// 蝎子（14×10，双钳朝右，卷尾朝左）
+export const SPR_SCORPION_1: Sprite = [
+  'KZ..........',
+  'KK..........',
+  '.KK...KZK...',
+  '..KZZKKZK...',
+  '..KZZZZK....',
+  'KZZZZZZZK...',
+  'KZZZZZZZZK..',
+  'KZZKZZZZZK..',
+  '.KZKZZZZK...',
+  '..KK..KK....',
+]
+export const SPR_SCORPION_2: Sprite = [
+  'KZ..........',
+  'KK..........',
+  '.KK...KZK...',
+  '..KZZKKZK...',
+  '..KZZZZK....',
+  'KZZZZZZZK...',
+  'KZZZZZZZZK..',
+  'KZZKZZZZZK..',
+  '.KZKZZZZK...',
+  '..KK.KK.....',
+]
+// 秃鹫（16×12，大翅，秃头）
+export const SPR_VULTURE_1: Sprite = [
+  '..KK........KK..',
+  '.KHHK......KHHK.',
+  'KHHHHK....KHHHHK',
+  'KHHHHHHHHHHHHHHK',
+  'KHHHHHHHHHHHHHHK',
+  '.KHHHHHHHHHHHHK.',
+  '..KHHHHHHHHHHK..',
+  '...KHKPHHHKHK...',
+  '....KHHHHHHK....',
+  '.....KHHHHK.....',
+  '......KKKK......',
+  '................',
+]
+export const SPR_VULTURE_2: Sprite = [
+  '................',
+  '................',
+  '.KHHK......KHHK.',
+  'KHHHHK....KHHHHK',
+  'KHHHHHHHHHHHHHHK',
+  'KHHHHHHHHHHHHHHK',
+  '.KHHHHHHHHHHHHK.',
+  '..KHKPHHHKHK....',
+  '...KHHHHHHK.....',
+  '....KHHHHK......',
+  '.....KKKK.......',
+  '................',
+]
+// 眼镜蛇（14×12，立身展颈，朝右）
+export const SPR_COBRA_1: Sprite = [
+  '...K.........',
+  '...KKK.......',
+  '..KIIIK......',
+  '.KIIIIIIK....',
+  '.KIIKIIIIK...',
+  'KIIIIIIIIIK..',
+  'KIKIIIIIIIIK.',
+  'KIIIIIIIIIIK.',
+  'KIIIIIIIIIIK.',
+  'KIIIIIIIIIIK.',
+  '.KIIIIIIIIK..',
+  '..KKKKKKKK...',
+]
+export const SPR_COBRA_2: Sprite = [
+  '...K.........',
+  '...KKK.......',
+  '..KIIIK......',
+  '.KIIIIIIK....',
+  '.KIIKIIIIK...',
+  'KIIIIIIIIIK..',
+  'KIKIIIIIIIIK.',
+  'KIIIIIIIIIIK.',
+  'KIIIIIIIIIIK.',
+  'KIIIIIIIIIIK.',
+  '.KIIIIIIIIK..',
+  '..KKKKKKKK...',
+]
+// 骆驼王 BOSS（30×30：王冠 + 红披风 + 单头双驼峰）
+export const SPR_BOSS_CAMEL: Sprite = [
+  '..........KKKKKKKKKKKK..........',
+  '.........KYYYYYYYYYYYYK.........',
+  '.........KYYKYYYYYYYYKYYK.......',
+  '........KYYYYKYYYYKYYYYK........',
+  '.........KYYYYYYYYYYYYK.........',
+  '..........KYYYYYYYYYYK..........',
+  '...........KYYYYYYYYK...........',
+  '............KKKKKKKK............',
+  '..................K.............',
+  '.................KDK............',
+  '.................KDDK...........',
+  '.................KDDDK..........',
+  '................KDKDDK..........',
+  '.................KDDK...........',
+  '..................KDDK..........',
+  '..................KDDK..........',
+  '...KK.............KDDK..........',
+  '..KDDK............KDDDDK........',
+  'KKDDDDKKKK......KDDDDDDDDK......',
+  'KRRKDDDDDDDDDDDDDDDDDDDDDDK.....',
+  'KRRRRKDDDDDDDDDDDDDDDDDDDK......',
+  'KRRRRRRKddDDDDDDDDDDDDddDDK.....',
+  '.KRRRRRKddDDDDDDDDDDDDddDDK.....',
+  '..KRRRRKddDDDDDDDDDDDDddDDK.....',
+  '...KRRKKddDDDDDDDDDDDDddDDK.....',
+  '....KKKddDDDDDDDDDDDDddDDK......',
+  '......KddDDDDDDDDDDDDddDDK......',
+  '.......KKKKKKKKKKKKKKKKKK.......',
+  '................................',
+  '................................',
+]
+// ================= 大关 3：月光森林敌人 =================
+// 蝙蝠（10×8，翼展）
+export const SPR_BAT_1: Sprite = [
+  '.K......K.',
+  'KKK....KKK',
+  'KUUKKKKUUK',
+  'KUUUUUUUUK',
+  '.KUUKUUK..',
+  '.KUUKUUK..',
+  '..KK..KK..',
+  '..........',
+]
+export const SPR_BAT_2: Sprite = [
+  '..........',
+  '.K......K.',
+  'KKK....KKK',
+  'KUUKKKKUUK',
+  'KUUUUUUUUK',
+  '.KUUKUUK..',
+  '..KK..KK..',
+  '..........',
+]
+// 野猪（16×14，獠牙 + 鬃毛）
+export const SPR_BOAR_1: Sprite = [
+  '..KK......KK..',
+  '.KNNK....KNNK.',
+  'KNNNNK..KNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNKNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KWKNNNNNNNNNKW',
+  '.KNNNNNNNNNNK.',
+  '.KNNNNNNNNNNK.',
+  '..KNNK..KNNK..',
+  '...KK....KK...',
+]
+export const SPR_BOAR_2: Sprite = [
+  '..KK......KK..',
+  '.KNNK....KNNK.',
+  'KNNNNK..KNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNKNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KNNNNNNNNNNNNK',
+  'KWKNNNNNNNNNKW',
+  '.KNNNNNNNNNNK.',
+  '.KNNNNNNNNNNK.',
+  '...KNNK.KNNK..',
+  '....KK...KK...',
+]
+// 狼（16×14，灰身尖耳）
+export const SPR_WOLF_1: Sprite = [
+  '..KK......KK..',
+  '.KAAK....KAAK.',
+  'KAAAAK..KAAAAK',
+  'KAAAAAAAAAAAAK',
+  'KAAAAAAAAAAAAK',
+  'KAAKAAAAAAAAAK',
+  'KAAAAAAAAAAAAK',
+  'KAAAAAAAAAAAK.',
+  'KAAAAAAAAAAMK.',
+  'KAAAAAAAAAMMK.',
+  '.KAAAAAAAAAAK.',
+  '.KAAAAAAAAAAK.',
+  '..KAAK..KAAK..',
+  '...KK....KK...',
+]
+export const SPR_WOLF_2: Sprite = [
+  '..KK......KK..',
+  '.KAAK....KAAK.',
+  'KAAAAK..KAAAAK',
+  'KAAAAAAAAAAAAK',
+  'KAAAAAAAAAAAAK',
+  'KAAKAAAAAAAAAK',
+  'KAAAAAAAAAAAAK',
+  'KAAAAAAAAAAAK.',
+  'KAAAAAAAAAAMK.',
+  'KAAAAAAAAAMMK.',
+  '.KAAAAAAAAAAK.',
+  '.KAAAAAAAAAAK.',
+  '...KAAK.KAAK..',
+  '....KK...KK...',
+]
+// 猫头鹰（12×14，圆脸大眼）
+export const SPR_OWL_1: Sprite = [
+  '....KKKK....',
+  '...KNNNNK...',
+  '..KNNNNNNK..',
+  '.KNNNNNNNNK.',
+  '.KNYNNNNYNK.',
+  'KNNYNNNNYNNK',
+  'KNNYNNNNYNNK',
+  'KNNNNNNNNNNK',
+  'KNNNNOKNNNNK',
+  'KNNNNNNNNNNK',
+  '.KNNNNNNNNK.',
+  '..KNNNNNNK..',
+  '...KNNNNK...',
+  '....KKKK....',
+]
+export const SPR_OWL_2: Sprite = [
+  '....KKKK....',
+  '...KNNNNK...',
+  '..KNNNNNNK..',
+  '.KNNNNNNNNK.',
+  '.KNYNNNNYNK.',
+  'KNNYNNNNYNNK',
+  'KNNYNNNNYNNK',
+  'KNNNNNNNNNNK',
+  'KNNNNOKNNNNK',
+  'KNNNNNNNNNNK',
+  '.KNNNNNNNNK.',
+  '..KNNNNNNK..',
+  '...KNNNNK...',
+  '....KKKK....',
+]
+// 狼王 BOSS（30×30：王冠 + 红眼 + 灰狼）
+export const SPR_BOSS_WOLF: Sprite = [
+  '..........KKKKKKKKKKKK..........',
+  '.........KYYYYYYYYYYYYK.........',
+  '.........KYYKYYYYYYYYKYYK.......',
+  '........KYYYYKYYYYKYYYYK........',
+  '.........KYYYYYYYYYYYYK.........',
+  '..........KYYYYYYYYYYK..........',
+  '...........KYYYYYYYYK...........',
+  '............KKKKKKKK............',
+  '..........KK......KK............',
+  '.........KAAK....KAAK...........',
+  '........KAAAAK..KAAAAK..........',
+  '.......KAAAAAAAAAAAAAAK.........',
+  '.......KAAAAAAAAAAAAAAK.........',
+  '.......KAARAAAAAAAARAAK.........',
+  '.......KAARAAAAAAAARAAK.........',
+  'K......KAAAAAAAAAAAAAAK.........',
+  'KRRK...KAAKAAAAAAAAAAAK.........',
+  'KRRRRK.KAAAAAAAAAAAAAAAK........',
+  'KRRRRRRKAAAAAAAAAAAAAAAK........',
+  '.KRRRRRKAAAAAAAAAAAAAAAAK.......',
+  '..KRRRRKAAAAAAAAAAAKAAAAK.......',
+  '...KRRKKAAAAAAAAAAKAAAMK........',
+  '....KKKAAAAAAAAAAAAMMMK.........',
+  '......KAAAAAAAAAAAAAMMMK........',
+  '.......KAAAAAAAAAAAAAAMK........',
+  '.......KAAAAAAAAAAAAAAAAK.......',
+  '........KAAAAAAAAAAAAAAK........',
+  '.........KAAAAAAAAAAAAK.........',
+  '..........KKKKKKKKKKKK...........',
+  '................................',
+]

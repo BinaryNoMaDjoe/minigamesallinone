@@ -353,6 +353,70 @@
   border: 2px solid var(--ink);
 }
 
+/* —— 选择关卡（DESIGN v1.2 §3） —— */
+.sbk-stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sbk-stage-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 44px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--on-surface);
+  background: var(--surface-container-low);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 0 var(--ink-shadow);
+}
+
+.sbk-stage-card.current {
+  border-color: var(--primary);
+  background: var(--primary-fixed);
+  box-shadow: 3px 3px 0 0 var(--primary);
+}
+
+.sbk-stage-card.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--surface-container);
+  box-shadow: none;
+}
+
+.sbk-stage-card:not(.locked):active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.sbk-stage-card:focus-visible {
+  outline: 3px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+.sbk-stage-name {
+  font-family: 'Press Start 2P', var(--font-headline-md);
+  font-size: 9px;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+.sbk-stage-status {
+  font-family: 'Press Start 2P', var(--font-label-sm);
+  font-size: 7px;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+}
+
+.sbk-stage-card.current .sbk-stage-status {
+  color: var(--primary);
+}
+
 /* —— 成就解锁提示 —— */
 .sbk-toasts {
   position: absolute;

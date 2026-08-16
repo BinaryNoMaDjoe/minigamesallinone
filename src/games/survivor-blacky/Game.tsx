@@ -23,6 +23,24 @@ import {
   SPR_PIGEON_2,
   SPR_MINIPIGEON,
   SPR_BOSS,
+  SPR_CAMEL_1,
+  SPR_CAMEL_2,
+  SPR_SCORPION_1,
+  SPR_SCORPION_2,
+  SPR_VULTURE_1,
+  SPR_VULTURE_2,
+  SPR_COBRA_1,
+  SPR_COBRA_2,
+  SPR_BOSS_CAMEL,
+  SPR_BAT_1,
+  SPR_BAT_2,
+  SPR_BOAR_1,
+  SPR_BOAR_2,
+  SPR_WOLF_1,
+  SPR_WOLF_2,
+  SPR_OWL_1,
+  SPR_OWL_2,
+  SPR_BOSS_WOLF,
   SPR_GEM,
   SPR_HAIRBALL,
   SPR_YARN,
@@ -124,15 +142,28 @@ const QUOTE_TEXT: Record<QuoteKey, SurvivorBkStringKey> = {
   lowHp: 'quoteLowHp',
   levelUp: 'quoteLevelUp',
   victory: 'quoteVictory',
+  evolve: 'quoteEvolve',
 }
 
 const ENEMY_PARTICLE_COLOR: Record<SpawnKind, string> = {
-  pig: C.red,
-  chicken: C.paper,
-  dog: C.fenceLight,
-  pigeon: C.rock,
-  minipigeon: C.paper,
-  boss: C.red,
+  pig: '#ff9db1',
+  chicken: '#fff6e8',
+  dog: '#c98a4b',
+  pigeon: '#b9c2cf',
+  camel: '#d9b068',
+  scorpion: '#c94f3d',
+  vulture: '#5c5663',
+  cobra: '#57a83f',
+  bat: '#a200ff',
+  boar: '#8a5a2b',
+  wolf: '#b9c2cf',
+  owl: '#c98a4b',
+  minipigeon: '#e8edf4',
+  miniscorpion: '#c94f3d',
+  minibat: '#a200ff',
+  pigeonking: C.red,
+  camelking: C.red,
+  wolfking: C.red,
 }
 
 // —— 精灵缓存：网格 → 离屏 canvas（含翻转/缩放变体） ——
@@ -191,6 +222,43 @@ function seededRng(seed: number): () => number {
     s = (s * 1664525 + 1013904223) >>> 0
     return s / 0x100000000
   }
+}
+
+// —— 大关视觉配置（DESIGN.md v1.2 §3.4 每大关一张地图） ——
+interface StageVisual {
+  ground: string
+  groundDark: string
+  path: string
+  fence: string
+  fencePost: string
+  propTheme: 'meadow' | 'desert' | 'forest'
+}
+
+const STAGE_VISUALS: Record<number, StageVisual> = {
+  1: {
+    ground: '#7ec850',
+    groundDark: '#5f9a44',
+    path: '#e8d59c',
+    fence: '#a9713f',
+    fencePost: '#c98a4b',
+    propTheme: 'meadow',
+  },
+  2: {
+    ground: '#e8d59c',
+    groundDark: '#d9c48a',
+    path: '#cbb892',
+    fence: '#8a5a2b',
+    fencePost: '#c98a4b',
+    propTheme: 'desert',
+  },
+  3: {
+    ground: '#3f6b3a',
+    groundDark: '#355c31',
+    path: '#8a9a72',
+    fence: '#6f6f7a',
+    fencePost: '#9a9aa8',
+    propTheme: 'forest',
+  },
 }
 
 /** 布景（树/石/灌木/花，固定种子，避开出生点） */
@@ -335,6 +403,10 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
 
   useEffect(() => {
     const engine = new SurvivorEngine()
+    if (import.meta.env.DEV) {
+      const qsStage = Number(new URLSearchParams(window.location.search).get('sbkStage') ?? '0')
+      if (qsStage >= 1 && qsStage <= 3) engine.setStage(qsStage)
+    }
     const props = makeProps()
     let root: HTMLDivElement | null = null
     let canvas: HTMLCanvasElement | null = null
@@ -354,8 +426,8 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
     let lastLang: string = langRef.current
     let lastScreen = ''
 
-    // 屏幕子状态（menu 阶段内）：menu / achievements / howto
-    let screen: 'menu' | 'achievements' | 'howto' = 'menu'
+    // 屏幕子状态（menu 阶段内）：menu / achievements / howto / stages
+    let screen: 'menu' | 'achievements' | 'howto' | 'stages' = 'menu'
 
     // 视觉状态
     const particles: Particle[] = []
@@ -364,8 +436,13 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
     let quote: QuoteBubble | null = null
     let shake = 0
     let hurtFlash = 0
+    let evolveFlash = 0
+    let evolveBanner: { text: string; t: number } | null = null
     let walkT = 0
     let time = 0
+    // 连杀（收割反馈，DESIGN v1.2 §2.6）
+    let combo = 0
+    let lastKillAt = -99
     const keys = new Set<string>()
     const joy = { active: false, ax: 0, ay: 0, dx: 0, dy: 0 }
     // 成就
@@ -374,6 +451,8 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
     let toastTimer = 0
 
     const t = (key: SurvivorBkStringKey) => pickLang(S[key], langRef.current)
+
+    const isStageUnlocked = (n: number): boolean => n === 1 || progressService.hasFlag('stage' + n)
 
     /* ================= 成就系统 ================= */
 
@@ -453,7 +532,7 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
             )
             break
           case 'kill': {
-            burst(ev.x, ev.y, ENEMY_PARTICLE_COLOR[ev.kind], ev.tier === 'boss' ? 22 : 6)
+            burst(ev.x, ev.y, ENEMY_PARTICLE_COLOR[ev.kind], ev.tier === 'boss' ? 26 : 8)
             if (popTexts.length < 8) {
               const pool = S.onomatopoeia
               const word = pool[Math.floor(Math.random() * pool.length)]!
@@ -466,6 +545,20 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
                 colors[Math.floor(Math.random() * colors.length)]!,
                 false,
               )
+            }
+            // 连杀（1.5s 窗口；×5 起弹字，×10 起震屏，DESIGN v1.2 §2.6）
+            if (time - lastKillAt < 1.5) {
+              combo++
+            } else {
+              combo = 1
+            }
+            lastKillAt = time
+            if (combo >= 5 && combo % 5 === 0) {
+              const size = combo >= 20 ? 10 : combo >= 10 ? 8 : 7
+              addPop(ev.x, ev.y - 12, '×' + combo, size, C.yellow, false)
+            }
+            if (combo >= 10 && combo % 10 === 0) {
+              shake = Math.max(shake, 3)
             }
             break
           }
@@ -515,6 +608,15 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
           case 'quote':
             quote = { text: t(QUOTE_TEXT[ev.key]), t: 0 }
             break
+          case 'evolve': {
+            evolveFlash = 0.45
+            shake = 14
+            const evoName = t(('evolve_' + ev.weapon) as SurvivorBkStringKey)
+            evolveBanner = { text: evoName, t: 0 }
+            burst(engine.player.x, engine.player.y, C.yellow, 40)
+            burst(engine.player.x, engine.player.y, C.paper, 20)
+            break
+          }
           case 'levelup':
           case 'over':
             break
@@ -528,6 +630,16 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
       time += dt
       shake = Math.max(0, shake - dt * 24)
       hurtFlash = Math.max(0, hurtFlash - dt * 3.2)
+      evolveFlash = Math.max(0, evolveFlash - dt * 1.6)
+      if (evolveBanner) {
+        evolveBanner.t += dt
+        if (evolveBanner.t > 2.2) evolveBanner = null
+      }
+      evolveFlash = Math.max(0, evolveFlash - dt * 1.6)
+      if (evolveBanner) {
+        evolveBanner.t += dt
+        if (evolveBanner.t > 2.2) evolveBanner = null
+      }
       if (banner) {
         banner.t += dt
         if (banner.t > 2.6) banner = null
@@ -566,11 +678,22 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
 
     /* ================= 渲染：场地 ================= */
 
+    const stageVisual = (): StageVisual => STAGE_VISUALS[engine.stage] ?? STAGE_VISUALS[1]!
+
+    const bossNameKey = (): SurvivorBkStringKey =>
+      engine.stageDef.boss === 'pigeonking'
+        ? 'enemy_boss'
+        : (('enemy_' + engine.stageDef.boss) as SurvivorBkStringKey)
+
+    const stageNameKey = (): SurvivorBkStringKey =>
+      ('stage' + engine.stage + 'Name') as SurvivorBkStringKey
+
     const drawGround = (): void => {
       if (!ctx) return
-      ctx.fillStyle = C.grass
+      const sv = stageVisual()
+      ctx.fillStyle = sv.ground
       ctx.fillRect(0, 0, W, H)
-      ctx.fillStyle = C.grassDark
+      ctx.fillStyle = sv.groundDark
       const cell = 40
       for (let gx = 0; gx < W; gx += cell) {
         for (let gy = 0; gy < H; gy += cell) {
@@ -579,12 +702,17 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
           }
         }
       }
-      // 十字土路
-      ctx.fillStyle = C.path
+      // 十字主路（带墨线边）
+      ctx.fillStyle = sv.path
       ctx.fillRect(WORLD_W / 2 - 55, 0, 110, H)
       ctx.fillRect(0, WORLD_H / 2 - 55, W, 110)
-      // 栅栏
-      ctx.fillStyle = C.fence
+      ctx.fillStyle = 'rgba(28,27,27,0.14)'
+      ctx.fillRect(WORLD_W / 2 - 57, 0, 2, H)
+      ctx.fillRect(WORLD_W / 2 + 55, 0, 2, H)
+      ctx.fillRect(0, WORLD_H / 2 - 57, W, 2)
+      ctx.fillRect(0, WORLD_H / 2 + 55, W, 2)
+      // 栅栏（随大关样式）
+      ctx.fillStyle = sv.fence
       for (let x = 0; x <= W; x += 60) {
         ctx.fillRect(x - 3, 0, 6, 16)
         ctx.fillRect(x - 3, H - 16, 6, 16)
@@ -593,16 +721,73 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
         ctx.fillRect(0, y - 3, 16, 6)
         ctx.fillRect(W - 16, y - 3, 16, 6)
       }
+      ctx.fillStyle = sv.fencePost
+      for (let x = 0; x <= W; x += 60) {
+        ctx.fillRect(x - 3, 0, 6, 4)
+        ctx.fillRect(x - 3, H - 16, 6, 4)
+      }
+      for (let y = 0; y <= H; y += 60) {
+        ctx.fillRect(0, y - 3, 4, 6)
+        ctx.fillRect(W - 16, y - 3, 4, 6)
+      }
       ctx.fillStyle = C.ink
       ctx.fillRect(0, 0, W, 2)
       ctx.fillRect(0, H - 2, W, 2)
       ctx.fillRect(0, 0, 2, H)
       ctx.fillRect(W - 2, 0, 2, H)
+      // 大关特有地面装饰
+      if (sv.propTheme === 'desert') {
+        // 沙纹
+        ctx.fillStyle = 'rgba(140,110,60,0.25)'
+        for (let i = 0; i < 26; i++) {
+          const px = (i * 173 + 31) % W
+          const py = (i * 97 + 17) % H
+          ctx.fillRect(px, py, 14, 2)
+          ctx.fillRect(px + 2, py + 4, 10, 2)
+        }
+      } else if (sv.propTheme === 'forest') {
+        // 苔斑
+        ctx.fillStyle = 'rgba(20,40,20,0.28)'
+        for (let i = 0; i < 30; i++) {
+          const px = (i * 151 + 29) % W
+          const py = (i * 89 + 13) % H
+          ctx.fillRect(px, py, 10, 5)
+          ctx.fillRect(px + 3, py - 3, 5, 3)
+        }
+      } else {
+        // 草斑
+        ctx.fillStyle = 'rgba(60,130,50,0.35)'
+        for (let i = 0; i < 26; i++) {
+          const px = (i * 131 + 19) % W
+          const py = (i * 73 + 23) % H
+          ctx.fillRect(px, py, 8, 3)
+          ctx.fillRect(px + 2, py - 3, 4, 3)
+        }
+      }
     }
 
     const drawProps = (): void => {
       if (!ctx) return
+      const sv = stageVisual()
       for (const p of props) {
+        if (sv.propTheme === 'desert') {
+          drawDesertProp(p)
+          continue
+        }
+        if (sv.propTheme === 'forest') {
+          drawForestProp(p)
+          continue
+        }
+        drawMeadowProp(p)
+      }
+      // 大关动态装饰
+      if (sv.propTheme === 'meadow') drawPond()
+      if (sv.propTheme === 'forest') drawFireflies()
+    }
+
+    const drawMeadowProp = (p: Prop): void => {
+      if (!ctx) return
+      {
         const s = p.s
         switch (p.kind) {
           case 'tree': {
@@ -709,6 +894,335 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
       }
     }
 
+    /** 沙漠装饰：仙人掌/棕榈/岩石/兽骨/帐篷 */
+    const drawDesertProp = (p: Prop): void => {
+      if (!ctx) return
+      const s = p.s
+      ctx.fillStyle = C.shadowSoft
+      ctx.fillRect(
+        Math.round(p.x - 10 * s),
+        Math.round(p.y + 3 * s),
+        Math.round(20 * s),
+        Math.round(5 * s),
+      )
+      switch (p.kind) {
+        case 'tree': {
+          // 仙人掌
+          ctx.fillStyle = '#3f7d2e'
+          ctx.fillRect(
+            Math.round(p.x - 2 * s),
+            Math.round(p.y - 10 * s),
+            Math.round(4 * s),
+            Math.round(13 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 6 * s),
+            Math.round(p.y - 6 * s),
+            Math.round(4 * s),
+            Math.round(5 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x + 2 * s),
+            Math.round(p.y - 8 * s),
+            Math.round(4 * s),
+            Math.round(4 * s),
+          )
+          ctx.fillStyle = '#57a83f'
+          ctx.fillRect(
+            Math.round(p.x - 1 * s),
+            Math.round(p.y - 10 * s),
+            Math.round(2 * s),
+            Math.round(10 * s),
+          )
+          break
+        }
+        case 'rock': {
+          // 棕榈树
+          ctx.fillStyle = C.trunk
+          ctx.fillRect(
+            Math.round(p.x - 2 * s),
+            Math.round(p.y - 6 * s),
+            Math.round(4 * s),
+            Math.round(9 * s),
+          )
+          ctx.fillStyle = '#57a83f'
+          ctx.fillRect(
+            Math.round(p.x - 9 * s),
+            Math.round(p.y - 9 * s),
+            Math.round(8 * s),
+            Math.round(3 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x + 1 * s),
+            Math.round(p.y - 9 * s),
+            Math.round(8 * s),
+            Math.round(3 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 4 * s),
+            Math.round(p.y - 12 * s),
+            Math.round(8 * s),
+            Math.round(3 * s),
+          )
+          break
+        }
+        case 'bush': {
+          // 兽骨
+          ctx.fillStyle = C.paper
+          ctx.fillRect(
+            Math.round(p.x - 6 * s),
+            Math.round(p.y - 4 * s),
+            Math.round(12 * s),
+            Math.round(3 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 8 * s),
+            Math.round(p.y - 6 * s),
+            Math.round(3 * s),
+            Math.round(4 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x + 5 * s),
+            Math.round(p.y - 6 * s),
+            Math.round(3 * s),
+            Math.round(4 * s),
+          )
+          ctx.fillStyle = 'rgba(28,27,27,0.3)'
+          ctx.fillRect(
+            Math.round(p.x - 6 * s),
+            Math.round(p.y - 1 * s),
+            Math.round(12 * s),
+            Math.round(1 * s),
+          )
+          break
+        }
+        case 'flower': {
+          // 小帐篷
+          ctx.fillStyle = '#e62429'
+          ctx.fillRect(
+            Math.round(p.x - 8 * s),
+            Math.round(p.y - 6 * s),
+            Math.round(16 * s),
+            Math.round(9 * s),
+          )
+          ctx.fillStyle = '#a31217'
+          ctx.fillRect(
+            Math.round(p.x - 6 * s),
+            Math.round(p.y - 6 * s),
+            Math.round(12 * s),
+            Math.round(6 * s),
+          )
+          ctx.fillStyle = C.ink
+          ctx.fillRect(
+            Math.round(p.x - 8 * s),
+            Math.round(p.y - 7 * s),
+            Math.round(16 * s),
+            Math.round(1 * s),
+          )
+          ctx.fillStyle = '#f3f0ef'
+          ctx.fillRect(
+            Math.round(p.x - 2 * s),
+            Math.round(p.y - 3 * s),
+            Math.round(4 * s),
+            Math.round(5 * s),
+          )
+          break
+        }
+      }
+    }
+
+    /** 森林装饰：松树/发光蘑菇/石碑/枯枝 */
+    const drawForestProp = (p: Prop): void => {
+      if (!ctx) return
+      const s = p.s
+      ctx.fillStyle = C.shadowSoft
+      ctx.fillRect(
+        Math.round(p.x - 10 * s),
+        Math.round(p.y + 3 * s),
+        Math.round(20 * s),
+        Math.round(5 * s),
+      )
+      switch (p.kind) {
+        case 'tree': {
+          // 松树（三层塔形）
+          ctx.fillStyle = C.trunk
+          ctx.fillRect(
+            Math.round(p.x - 2 * s),
+            Math.round(p.y + 1 * s),
+            Math.round(4 * s),
+            Math.round(5 * s),
+          )
+          ctx.fillStyle = '#2c5226'
+          ctx.fillRect(
+            Math.round(p.x - 9 * s),
+            Math.round(p.y - 4 * s),
+            Math.round(18 * s),
+            Math.round(5 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 7 * s),
+            Math.round(p.y - 9 * s),
+            Math.round(14 * s),
+            Math.round(5 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 5 * s),
+            Math.round(p.y - 14 * s),
+            Math.round(10 * s),
+            Math.round(5 * s),
+          )
+          ctx.fillStyle = '#3f6b3a'
+          ctx.fillRect(
+            Math.round(p.x - 7 * s),
+            Math.round(p.y - 3 * s),
+            Math.round(14 * s),
+            Math.round(3 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 5 * s),
+            Math.round(p.y - 8 * s),
+            Math.round(10 * s),
+            Math.round(3 * s),
+          )
+          break
+        }
+        case 'rock': {
+          // 石碑
+          ctx.fillStyle = C.rockDark
+          ctx.fillRect(
+            Math.round(p.x - 6 * s),
+            Math.round(p.y - 10 * s),
+            Math.round(12 * s),
+            Math.round(13 * s),
+          )
+          ctx.fillStyle = C.rock
+          ctx.fillRect(
+            Math.round(p.x - 4 * s),
+            Math.round(p.y - 9 * s),
+            Math.round(8 * s),
+            Math.round(11 * s),
+          )
+          ctx.fillStyle = 'rgba(28,27,27,0.25)'
+          ctx.fillRect(
+            Math.round(p.x - 4 * s),
+            Math.round(p.y - 7 * s),
+            Math.round(8 * s),
+            Math.round(2 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 4 * s),
+            Math.round(p.y - 4 * s),
+            Math.round(8 * s),
+            Math.round(2 * s),
+          )
+          break
+        }
+        case 'bush': {
+          // 发光蘑菇（脉动）
+          const glow = 0.6 + Math.sin(time * 3 + p.seed) * 0.4
+          ctx.fillStyle = C.ink
+          ctx.fillRect(
+            Math.round(p.x - 3 * s),
+            Math.round(p.y - 5 * s),
+            Math.round(6 * s),
+            Math.round(2 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 1 * s),
+            Math.round(p.y - 5 * s),
+            Math.round(2 * s),
+            Math.round(4 * s),
+          )
+          ctx.fillStyle = '#6f00b3'
+          ctx.fillRect(
+            Math.round(p.x - 5 * s),
+            Math.round(p.y - 8 * s),
+            Math.round(10 * s),
+            Math.round(5 * s),
+          )
+          ctx.fillStyle = '#a200ff'
+          ctx.fillRect(
+            Math.round(p.x - 3 * s),
+            Math.round(p.y - 7 * s),
+            Math.round(6 * s),
+            Math.round(3 * s),
+          )
+          ctx.globalAlpha = glow * 0.5
+          ctx.fillStyle = '#c77dff'
+          ctx.fillRect(
+            Math.round(p.x - 5 * s),
+            Math.round(p.y - 8 * s),
+            Math.round(10 * s),
+            Math.round(1 * s),
+          )
+          ctx.globalAlpha = 1
+          break
+        }
+        case 'flower': {
+          // 枯枝
+          ctx.fillStyle = C.trunk
+          ctx.fillRect(
+            Math.round(p.x - 1 * s),
+            Math.round(p.y - 6 * s),
+            Math.round(3 * s),
+            Math.round(9 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x - 5 * s),
+            Math.round(p.y - 3 * s),
+            Math.round(4 * s),
+            Math.round(3 * s),
+          )
+          ctx.fillRect(
+            Math.round(p.x + 2 * s),
+            Math.round(p.y - 5 * s),
+            Math.round(4 * s),
+            Math.round(3 * s),
+          )
+          break
+        }
+      }
+    }
+
+    /** 牧场水塘（波纹动画） */
+    const drawPond = (): void => {
+      if (!ctx) return
+      const px = 150
+      const py = 420
+      ctx.fillStyle = '#3d9fd1'
+      ctx.fillRect(px, py, 90, 60)
+      ctx.fillStyle = '#4fb3e8'
+      ctx.fillRect(px + 3, py + 3, 84, 54)
+      const ripple = Math.floor(time * 2) % 3
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'
+      for (let i = 0; i < 3; i++) {
+        const ox = 12 + i * 26 + ripple * 6
+        const oy = 10 + i * 14 + (i === 1 ? 6 : 0)
+        ctx.fillRect(px + ox, py + oy, 10, 2)
+      }
+      ctx.fillStyle = C.ink
+      ctx.fillRect(px - 2, py - 2, 94, 2)
+      ctx.fillRect(px - 2, py + 60, 94, 2)
+      ctx.fillRect(px - 2, py - 2, 2, 64)
+      ctx.fillRect(px + 90, py - 2, 2, 64)
+    }
+
+    /** 森林萤火虫（飘动光点） */
+    const drawFireflies = (): void => {
+      if (!ctx) return
+      ctx.fillStyle = '#ffe16d'
+      for (let i = 0; i < 10; i++) {
+        const fx = (Math.sin(time * (0.5 + (i % 4) * 0.2) + i * 2.1) * 0.5 + 0.5) * W
+        const fy = (Math.cos(time * (0.4 + (i % 3) * 0.15) + i * 1.7) * 0.5 + 0.5) * H
+        const twinkle = Math.floor(time * 6 + i) % 3 !== 0
+        if (!twinkle) continue
+        ctx.fillRect(Math.round(fx), Math.round(fy), 2, 2)
+        ctx.globalAlpha = 0.4
+        ctx.fillRect(Math.round(fx) - 1, Math.round(fy) - 1, 4, 4)
+        ctx.globalAlpha = 1
+      }
+    }
+
     /* ================= 渲染：实体 ================= */
 
     const catSprite = (moving: boolean): Sprite => {
@@ -778,8 +1292,57 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
           }
         case 'minipigeon':
           return { sprite: SPR_MINIPIGEON, scale: 1 }
-        case 'boss':
+        case 'camel':
+          return {
+            sprite: Math.floor(time * 5 + e.wobbleSeed) % 2 === 0 ? SPR_CAMEL_1 : SPR_CAMEL_2,
+            scale: 1,
+          }
+        case 'scorpion':
+          return {
+            sprite:
+              Math.floor(time * 10 + e.wobbleSeed) % 2 === 0 ? SPR_SCORPION_1 : SPR_SCORPION_2,
+            scale: 1,
+          }
+        case 'vulture':
+          return {
+            sprite: Math.floor(time * 7 + e.wobbleSeed) % 2 === 0 ? SPR_VULTURE_1 : SPR_VULTURE_2,
+            scale: 1,
+          }
+        case 'cobra':
+          return {
+            sprite: Math.floor(time * 8 + e.wobbleSeed) % 2 === 0 ? SPR_COBRA_1 : SPR_COBRA_2,
+            scale: 1,
+          }
+        case 'bat':
+          return {
+            sprite: Math.floor(time * 12 + e.wobbleSeed) % 2 === 0 ? SPR_BAT_1 : SPR_BAT_2,
+            scale: 1,
+          }
+        case 'boar':
+          return {
+            sprite: Math.floor(time * 6 + e.wobbleSeed) % 2 === 0 ? SPR_BOAR_1 : SPR_BOAR_2,
+            scale: 1,
+          }
+        case 'wolf':
+          return {
+            sprite: Math.floor(time * 8 + e.wobbleSeed) % 2 === 0 ? SPR_WOLF_1 : SPR_WOLF_2,
+            scale: 1,
+          }
+        case 'owl':
+          return {
+            sprite: Math.floor(time * 6 + e.wobbleSeed) % 2 === 0 ? SPR_OWL_1 : SPR_OWL_2,
+            scale: 1,
+          }
+        case 'miniscorpion':
+          return { sprite: SPR_SCORPION_1, scale: 0.9 }
+        case 'minibat':
+          return { sprite: SPR_BAT_1, scale: 0.9 }
+        case 'pigeonking':
           return { sprite: SPR_BOSS, scale: 1.5 }
+        case 'camelking':
+          return { sprite: SPR_BOSS_CAMEL, scale: 1.5 }
+        case 'wolfking':
+          return { sprite: SPR_BOSS_WOLF, scale: 1.5 }
       }
     }
 
@@ -787,7 +1350,7 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
       if (!ctx) return
       const flip = Math.cos(e.facing) < 0
       const { sprite, scale } = enemySprite(e)
-      const shW = e.kind === 'boss' ? 24 : Math.min(e.radius, 10)
+      const shW = e.kind === engine.stageDef.boss ? 24 : Math.min(e.radius, 10)
       ctx.fillStyle = C.shadowSoft
       ctx.fillRect(Math.round(e.x - shW), Math.round(e.y + e.radius * 0.7), Math.round(shW * 2), 3)
       if (e.spawnT > 0) {
@@ -983,6 +1546,10 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
       pxText('WAVE ' + engine.wave + '/' + WAVE_COUNT, W - 130, 14, 7, C.red)
       pxText('KILLS ' + engine.kills, W - 206, 26, 7, C.ink)
       drawSprite(ctx, SPR_SKULL, W - 16, 21, 1)
+      ctx.font = '6px ' + PS2P_ZH
+      ctx.textAlign = 'right'
+      ctx.fillStyle = C.ink
+      ctx.fillText(t(stageNameKey()), W - 38, 27)
       // —— 武器槽 ——
       if (engine.weapons.length > 0) {
         const n = engine.weapons.length
@@ -994,6 +1561,14 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
           const wpn = engine.weapons[i]!
           const icon = SPR_ICON_WEAPON[wpn.id] ?? SPR_ICON_WEAPON.hairball!
           drawSprite(ctx, icon, startX + i * slot + 8, startY + 6, 1)
+          if (wpn.evolved) {
+            ctx.fillStyle = C.yellow
+            ctx.fillRect(startX + i * slot + 14, startY + 1, 3, 3)
+          }
+          if (wpn.evolved) {
+            ctx.fillStyle = C.yellow
+            ctx.fillRect(startX + i * slot + 14, startY + 1, 3, 3)
+          }
           for (let l = 0; l < 5; l++) {
             const dotX = startX + i * slot + 4 + l * 4
             const dotY = startY + 20
@@ -1010,7 +1585,7 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
         const bx = W / 2 - bw / 2
         panel(bx - 6, 8, bw + 12, 30)
         drawSprite(ctx, SPR_CROWN, bx + 8, 17, 1)
-        pxText(t('hudBossHp'), bx + 18, 13, 6, C.ink, 'left', false)
+        pxText(t(bossNameKey()), bx + 18, 13, 6, C.ink, 'left', false)
         ctx.fillStyle = C.barBg
         ctx.fillRect(bx, 25, bw, 8)
         ctx.fillStyle = C.red
@@ -1083,6 +1658,62 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
         ctx.fill()
         ctx.strokeStyle = C.ink
         ctx.stroke()
+        ctx.globalAlpha = 1
+      }
+      // —— 进化横幅与白闪（DESIGN v1.2 §2.6） ——
+      if (evolveBanner) {
+        const et = evolveBanner.t
+        const alpha = Math.min(1, et / 0.15) * Math.max(0, 1 - Math.max(0, et - 1.8) / 0.4)
+        ctx.globalAlpha = alpha
+        ctx.fillStyle = C.ink
+        ctx.fillRect(W / 2 - 180 + 4, 210 + 4, 360, 56)
+        ctx.fillStyle = C.yellow
+        ctx.fillRect(W / 2 - 180, 210, 360, 56)
+        ctx.strokeStyle = C.ink
+        ctx.lineWidth = 3
+        ctx.strokeRect(W / 2 - 180, 210, 360, 56)
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'top'
+        ctx.font = '12px ' + PS2P_ZH
+        ctx.fillStyle = C.ink
+        ctx.fillText(t('evolveTitle'), W / 2, 222)
+        ctx.font = '9px ' + PS2P_ZH
+        ctx.fillStyle = C.paper
+        ctx.fillText(evolveBanner.text, W / 2, 244)
+        ctx.globalAlpha = 1
+      }
+      if (evolveFlash > 0) {
+        ctx.globalAlpha = Math.min(1, evolveFlash * 2)
+        ctx.fillStyle = C.paper
+        ctx.fillRect(0, 0, W, H)
+        ctx.globalAlpha = 1
+      }
+      // —— 进化横幅与白闪（DESIGN v1.2 §2.6） ——
+      if (evolveBanner) {
+        const et = evolveBanner.t
+        const alpha = Math.min(1, et / 0.15) * Math.max(0, 1 - Math.max(0, et - 1.8) / 0.4)
+        ctx.globalAlpha = alpha
+        ctx.fillStyle = C.ink
+        ctx.fillRect(W / 2 - 180 + 4, 210 + 4, 360, 56)
+        ctx.fillStyle = C.yellow
+        ctx.fillRect(W / 2 - 180, 210, 360, 56)
+        ctx.strokeStyle = C.ink
+        ctx.lineWidth = 3
+        ctx.strokeRect(W / 2 - 180, 210, 360, 56)
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'top'
+        ctx.font = '12px ' + PS2P_ZH
+        ctx.fillStyle = C.ink
+        ctx.fillText(t('evolveTitle'), W / 2, 222)
+        ctx.font = '9px ' + PS2P_ZH
+        ctx.fillStyle = C.paper
+        ctx.fillText(evolveBanner.text, W / 2, 244)
+        ctx.globalAlpha = 1
+      }
+      if (evolveFlash > 0) {
+        ctx.globalAlpha = Math.min(1, evolveFlash * 2)
+        ctx.fillStyle = C.paper
+        ctx.fillRect(0, 0, W, H)
         ctx.globalAlpha = 1
       }
       // —— 低血警示 / 受伤闪屏 ——
@@ -1480,6 +2111,57 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
               true,
             ),
           )
+        } else if (screen === 'stages') {
+          const h = document.createElement('h2')
+          h.className = 'sbk-title'
+          h.textContent = t('stageSelect')
+          panelEl.append(h)
+          const list = document.createElement('div')
+          list.className = 'sbk-stage-list'
+          for (let n = 1; n <= 3; n++) {
+            const unlocked = isStageUnlocked(n)
+            const cleared = unlocked && n < engine.stage
+            const card = document.createElement('button')
+            card.type = 'button'
+            card.className =
+              'sbk-stage-card' +
+              (unlocked ? '' : ' locked') +
+              (n === engine.stage ? ' current' : '')
+            card.disabled = !unlocked
+            const name = document.createElement('div')
+            name.className = 'sbk-stage-name'
+            name.textContent = t(('stage' + n + 'Name') as SurvivorBkStringKey)
+            const status = document.createElement('div')
+            status.className = 'sbk-stage-status'
+            status.textContent = !unlocked
+              ? t('stageLocked')
+              : cleared
+                ? t('stageCleared')
+                : n === engine.stage
+                  ? '>'
+                  : '-'
+            card.append(name, status)
+            card.addEventListener('click', () => {
+              engine.setStage(n)
+              engine.startRun()
+            })
+            list.append(card)
+          }
+          panelEl.append(list)
+          const hint = document.createElement('div')
+          hint.className = 'sbk-hint'
+          hint.textContent = t('stageUnlockHint')
+          panelEl.append(hint)
+          panelEl.append(
+            mkBtn(
+              t('menuBack'),
+              () => {
+                screen = 'menu'
+                renderOverlay()
+              },
+              true,
+            ),
+          )
         } else if (screen === 'howto') {
           const h = document.createElement('h2')
           h.className = 'sbk-title'
@@ -1505,10 +2187,18 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
             ),
           )
         } else {
-          panelEl.append(mkBtn(t('menuStart'), () => engine.startRun(), true))
+          const startBtn = mkBtn(t('menuStart'), () => engine.startRun(), true)
+          const stageTag = document.createElement('div')
+          stageTag.className = 'sbk-hint'
+          stageTag.textContent = t(stageNameKey())
+          panelEl.append(startBtn, stageTag)
           const side = document.createElement('div')
           side.className = 'sbk-side-btns'
           side.append(
+            mkBtn(t('stageSelect'), () => {
+              screen = 'stages'
+              renderOverlay()
+            }),
             mkBtn(t('menuAchievements'), () => {
               screen = 'achievements'
               renderOverlay()
@@ -1565,6 +2255,15 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
           nb.className = 'sbk-newbest'
           nb.textContent = t('newBest')
           panelEl.append(nb)
+        }
+        if (engine.outcome === 'win' && engine.stage < 3) {
+          const unlock = document.createElement('div')
+          unlock.className = 'sbk-newbest'
+          unlock.textContent =
+            t('stageUnlocked') +
+            ' ' +
+            t(('stage' + (engine.stage + 1) + 'Name') as SurvivorBkStringKey)
+          panelEl.append(unlock)
         }
         panelEl.append(mkBtn(t('playAgain'), () => engine.startRun(), true))
         panelEl.append(mkBtn(t('toMenu'), () => engine.toMenu()))
@@ -1700,6 +2399,9 @@ export const SurvivorBkGame: GameComponent = ({ onReady }) => {
         if (engine.phase === 'over') {
           callbacks.onScore(engine.score)
           flushKills()
+          if (engine.outcome === 'win' && engine.stage < 3) {
+            progressService.setFlag('stage' + (engine.stage + 1))
+          }
         }
         if (engine.phase === 'menu') {
           screen = 'menu'
