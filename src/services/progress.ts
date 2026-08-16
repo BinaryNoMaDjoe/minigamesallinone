@@ -16,6 +16,10 @@ export interface ProgressService {
   totalKills(): number
   /** 累加击杀数（跨局，批量提交） */
   addKills(count: number): void
+  /** 通用布尔标志（如大关解锁） */
+  hasFlag(key: string): boolean
+  /** 设置通用标志（幂等） */
+  setFlag(key: string): void
   /** 清空全部进度（调试用） */
   clear(): void
 }
@@ -25,12 +29,13 @@ const KEY = 'mgaio:progress'
 interface ProgressState {
   unlocked: string[]
   totalKills: number
+  flags: string[]
 }
 
 function readState(): ProgressState {
   try {
     const raw = localStorage.getItem(KEY)
-    if (!raw) return { unlocked: [], totalKills: 0 }
+    if (!raw) return { unlocked: [], totalKills: 0, flags: [] }
     const parsed: unknown = JSON.parse(raw)
     if (parsed && typeof parsed === 'object') {
       const p = parsed as Partial<ProgressState>
@@ -38,11 +43,12 @@ function readState(): ProgressState {
         unlocked: Array.isArray(p.unlocked) ? p.unlocked.filter((x) => typeof x === 'string') : [],
         totalKills:
           typeof p.totalKills === 'number' && Number.isFinite(p.totalKills) ? p.totalKills : 0,
+        flags: Array.isArray(p.flags) ? p.flags.filter((x) => typeof x === 'string') : [],
       }
     }
-    return { unlocked: [], totalKills: 0 }
+    return { unlocked: [], totalKills: 0, flags: [] }
   } catch {
-    return { unlocked: [], totalKills: 0 }
+    return { unlocked: [], totalKills: 0, flags: [] }
   }
 }
 
@@ -79,6 +85,17 @@ export const progressService: ProgressService = {
     if (count <= 0) return
     const state = readState()
     state.totalKills += count
+    writeState(state)
+  },
+
+  hasFlag(key) {
+    return readState().flags.includes(key)
+  },
+
+  setFlag(key) {
+    const state = readState()
+    if (state.flags.includes(key)) return
+    state.flags.push(key)
     writeState(state)
   },
 
