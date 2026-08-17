@@ -2,11 +2,11 @@ import type { LocalizedText } from '../shared/types'
 
 // ============================================================
 // 游戏内文案（双语，随界面语言；skills/skill-i18n.md）
-// 唯一出处：同目录 DESIGN.md v0.3 §7；{n} 为模板占位
+// 唯一出处：同目录 DESIGN.md v0.6 §7；{n}/{name} 为模板占位
 // ============================================================
 
 export const lianliankanStrings = {
-  title: { zh: '连连看', en: 'CLICKCLICK' } satisfies LocalizedText,
+  title: { zh: '星露谷连连看', en: 'STARDEW CLICKCLICK' } satisfies LocalizedText,
   start: { zh: '开始游戏', en: 'START' } satisfies LocalizedText,
   resume: { zh: '继续', en: 'RESUME' } satisfies LocalizedText,
   restart: { zh: '重新开始', en: 'RESTART' } satisfies LocalizedText,
@@ -29,8 +29,9 @@ export const lianliankanStrings = {
   levelClear: { zh: '第 {n} 关完成！', en: 'LEVEL {n} CLEAR!' } satisfies LocalizedText,
   timeBonus: { zh: '时间奖励', en: 'TIME BONUS' } satisfies LocalizedText,
   autoShuffle: { zh: '无解，自动洗牌', en: 'NO MOVES — SHUFFLED' } satisfies LocalizedText,
+  chapterIntro: { zh: '第 {n} 大关 · {name}', en: 'CHAPTER {n} · {name}' } satisfies LocalizedText,
   menuHint: {
-    zh: '回车 / 空格 开始 · 连接拐角 ≤ 2',
-    en: 'PRESS ENTER OR SPACE · MAX 2 TURNS',
+    zh: '回车 / 空格 开始 · 拐角 ≤ 2 · 共 18 关 6 大关',
+    en: 'ENTER OR SPACE TO START · MAX 2 TURNS · 18 LEVELS',
   } satisfies LocalizedText,
 }

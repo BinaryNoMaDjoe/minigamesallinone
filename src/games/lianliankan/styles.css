@@ -1,6 +1,7 @@
 /* ============================================================
- * 游戏级星露谷式像素 UI（唯一出处：lianliankan/DESIGN.md v0.2 §7）
- * 硬边、深棕描边、硬阴影、Press Start 2P 像素字体（中文回退）
+ * 星露谷连连看 游戏级像素 UI（唯一出处：lianliankan/DESIGN.md v0.6 §9）
+ * 硬边、主题描边、硬阴影、Press Start 2P 像素字体（中文回退）
+ * 配色经 --llk-* CSS 变量随大关切换（Game.tsx applyTheme 注入，此处为第 1 大关默认值）
  * ============================================================ */
 
 .llk-tools {
@@ -18,10 +19,10 @@
   font-size: 8px;
   font-weight: 400;
   line-height: 1.5;
-  color: #3a2c1a;
-  background: #f4e4c1;
-  border: 2px solid #5a4632;
-  box-shadow: 2px 2px 0 #3a2c1a;
+  color: var(--llk-text, #3a2c1a);
+  background: var(--llk-ui-bg, #f4e4c1);
+  border: 2px solid var(--llk-ui-border, #5a4632);
+  box-shadow: 2px 2px 0 var(--llk-ui-shadow, #3a2c1a);
   padding: 8px 10px;
   min-width: 132px;
   min-height: 40px; /* §4.3：触控目标 ≥40px */
@@ -52,7 +53,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(58, 44, 26, 0.5);
+  background: var(--llk-overlay, rgba(58, 44, 26, 0.5));
 }
 
 .llk-panel {
@@ -64,9 +65,9 @@
   gap: 8px;
   padding: 16px;
   text-align: center;
-  background: #f4e4c1;
-  border: 3px solid #5a4632;
-  box-shadow: 4px 4px 0 #3a2c1a;
+  background: var(--llk-ui-bg, #f4e4c1);
+  border: 3px solid var(--llk-ui-border, #5a4632);
+  box-shadow: 4px 4px 0 var(--llk-ui-shadow, #3a2c1a);
 }
 
 .llk-panel h2 {
@@ -75,7 +76,7 @@
   font-size: 11px;
   font-weight: 400;
   line-height: 1.8;
-  color: #3a2c1a;
+  color: var(--llk-text, #3a2c1a);
 }
 
 .llk-panel .row {
@@ -86,18 +87,18 @@
   font-size: 8px;
   font-weight: 400;
   line-height: 1.6;
-  color: #7a5c3a;
+  color: var(--llk-sub, #7a5c3a);
 }
 
 .llk-panel .row b {
-  color: #3a2c1a;
+  color: var(--llk-text, #3a2c1a);
 }
 
 .llk-panel .hint {
   font-family: 'Press Start 2P', var(--font-label-sm);
   font-size: 8px;
   line-height: 1.8;
-  color: #7a5c3a;
+  color: var(--llk-sub, #7a5c3a);
 }
 
 .llk-btn {
@@ -111,16 +112,16 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #3a2c1a;
-  background: #fff6e0;
-  border: 2px solid #5a4632;
-  box-shadow: 2px 2px 0 #3a2c1a;
+  color: var(--llk-text, #3a2c1a);
+  background: var(--llk-btn-bg, #fff6e0);
+  border: 2px solid var(--llk-ui-border, #5a4632);
+  box-shadow: 2px 2px 0 var(--llk-ui-shadow, #3a2c1a);
 }
 
 .llk-btn.primary {
-  color: #ffffff;
-  background: #e05b4d;
-  border-color: #5a2e24;
+  color: var(--llk-primary-text, #ffd83d);
+  background: var(--llk-primary-bg, #7a4a2a);
+  border-color: var(--llk-ui-border, #5a4632);
 }
 
 .llk-btn:active {

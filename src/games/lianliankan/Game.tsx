@@ -5,15 +5,15 @@ import type { GameCallbacks, GameComponent, GameInstance } from '../shared/types
 import { LianliankanEngine } from './engine'
 import type { LianPhase, Point, TapResult } from './engine'
 import { getSprite, SPRITE_PALETTES, SPRITE_SIZE } from './pixel'
-import { LLK_PALETTE } from './shapes'
-import type { ShapeIndex } from './shapes'
+import { CHAPTERS } from './themes'
+import type { ChapterId, ChapterPalette } from './themes'
 import { lianliankanStrings as S } from './strings'
 import './styles.css'
 
 // ============================================================
-// 连连看（星露谷式像素风）—— 渲染与输入层
-// 规则/关卡/阶段唯一出处：同目录 DESIGN.md v0.2；像素精灵在 pixel.ts
-// 纯逻辑在 engine.ts（node 直跑可测）
+// 星露谷连连看（stardew clickclick）—— 渲染与输入层
+// 规则/关卡/大关/阶段唯一出处：同目录 DESIGN.md v0.6
+// 纯逻辑在 engine.ts（node 直跑可测）；精灵图鉴 pixel.ts；主题 themes.ts
 // ============================================================
 
 const W = 480
@@ -23,7 +23,7 @@ const BOARD_Y = 68
 const TILE = 32
 const GAP = 2
 const SCALE = 2
-const PIXEL_FONT = '"Press Start 2P", monospace'
+const PIXEL_FONT = '"Press Start 2P", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif'
 
 interface Particle {
   x: number
@@ -34,6 +34,7 @@ interface Particle {
 }
 
 interface MatchFx {
+  /** 含起终点的连线路径（engine.tap 已补齐起点，DESIGN.md §10 缺陷 #1） */
   path: Point[]
   t: number
 }
@@ -58,6 +59,8 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
     let lastScore = engine.score
     let lastPhase: LianPhase = engine.phase
     let lastUiKey = ''
+    let lastLevel = engine.level
+    let lastChapter = engine.chapter
     let matchFx: MatchFx | null = null
     let particles: Particle[] = []
     let hintPair: [Point, Point] | null = null
@@ -66,17 +69,24 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
     let callbacks: GameCallbacks = { onScore: () => {} }
 
     const t = (key: keyof typeof S) => pickLang(S[key], langRef.current)
-    const fmt = (key: 'levelClear', n: number) =>
-      pickLang(S[key], langRef.current).replace('{n}', String(n))
+    const fmt = (key: 'chapterIntro', n: number, name: string) =>
+      pickLang(S[key], langRef.current).replace('{n}', String(n)).replace('{name}', name)
+
+    const toastChapter = () => {
+      const theme = CHAPTERS[engine.chapter] ?? CHAPTERS[0]
+      const name = pickLang(theme.name, langRef.current)
+      toastText = fmt('chapterIntro', engine.chapter + 1, name)
+      toastT = 2.4
+    }
 
     /* —— 像素绘制 —— */
 
     const tileX = (col: number) => BOARD_X + col * (TILE + GAP)
     const tileY = (row: number) => BOARD_Y + row * (TILE + GAP)
 
-    const drawSprite = (g: CanvasRenderingContext2D, shape: ShapeIndex, x: number, y: number) => {
-      const sprite = getSprite(shape)
-      const palette = SPRITE_PALETTES[shape]
+    const drawSprite = (g: CanvasRenderingContext2D, id: number, x: number, y: number) => {
+      const sprite = getSprite(id)
+      const palette = SPRITE_PALETTES[id]
       for (let py = 0; py < SPRITE_SIZE; py++) {
         for (let px = 0; px < SPRITE_SIZE; px++) {
           const ch = sprite[py][px]
@@ -92,49 +102,228 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
                     ? palette.dark
                     : ch === 'E'
                       ? palette.face
-                      : palette.blush
+                      : ch === 'B'
+                        ? palette.blush
+                        : ch === 'A'
+                          ? palette.accent
+                          : palette.accentLight
           g.fillStyle = color
           g.fillRect(x + px * SCALE, y + py * SCALE, SCALE, SCALE)
         }
       }
     }
 
-    const drawCloud = (g: CanvasRenderingContext2D, x: number, y: number) => {
-      g.fillStyle = LLK_PALETTE.cloud
-      g.fillRect(x, y, 28, 8)
-      g.fillRect(x + 8, y - 8, 12, 8)
+    /** 六大关场景（DESIGN.md §3/§4.1；装饰一律避开左上 HUD 区 x<190,y<66） */
+    const drawScene = (g: CanvasRenderingContext2D, p: ChapterPalette, id: ChapterId) => {
+      g.fillStyle = p.sky
+      g.fillRect(0, 0, W, H)
+      switch (id) {
+        case 'spring-farm': {
+          g.fillStyle = p.cloud
+          g.fillRect(208, 14, 28, 8)
+          g.fillRect(216, 6, 12, 8)
+          g.fillRect(336, 32, 22, 6)
+          g.fillStyle = p.decor
+          g.fillRect(392, 10, 12, 12)
+          g.fillStyle = p.ground
+          g.fillRect(0, 244, W, H - 244)
+          g.fillStyle = p.groundDark
+          for (let y = 254; y < H; y += 14) {
+            const offset = ((y / 14) % 2) * 10
+            for (let x = 6 + offset; x < W; x += 26) g.fillRect(x, y, 6, 3)
+          }
+          break
+        }
+        case 'summer-beach': {
+          g.fillStyle = p.decor
+          g.fillRect(392, 12, 14, 14)
+          g.fillStyle = p.skyAlt
+          g.fillRect(0, 204, W, 52)
+          g.fillStyle = p.cloud
+          for (const y of [212, 226, 240]) {
+            for (let x = 8; x < W; x += 48) g.fillRect(x + (y % 24), y, 16, 3)
+          }
+          g.fillStyle = p.ground
+          g.fillRect(0, 256, W, H - 256)
+          g.fillStyle = p.groundDark
+          for (let y = 268; y < H; y += 16) {
+            for (let x = 10 + ((y / 16) % 2) * 12; x < W; x += 44) g.fillRect(x, y, 6, 3)
+          }
+          break
+        }
+        case 'autumn-forest': {
+          // 远处树影（树干+树冠，frame 深木色剪影，位于棋盘下方草地可见带）
+          g.fillStyle = p.frame
+          for (const [tx, th] of [
+            [8, 40],
+            [52, 34],
+            [404, 38],
+          ] as [number, number][]) {
+            g.fillRect(tx + 12, 330 - th, 6, th)
+            g.fillRect(tx, 330 - th - 18, 30, 18)
+          }
+          g.fillStyle = p.ground
+          g.fillRect(0, 244, W, H - 244)
+          g.fillStyle = p.groundDark
+          for (let y = 254; y < H; y += 14) {
+            const offset = ((y / 14) % 2) * 12
+            for (let x = 4 + offset; x < W; x += 30) g.fillRect(x, y, 7, 3)
+          }
+          g.fillStyle = p.decor
+          for (const [lx, ly] of [
+            [16, 262],
+            [58, 278],
+            [104, 252],
+            [150, 268],
+            [204, 254],
+            [250, 272],
+            [302, 258],
+            [348, 276],
+            [394, 252],
+            [446, 268],
+            [28, 330],
+            [186, 332],
+            [330, 334],
+            [452, 326],
+          ] as [number, number][]) {
+            g.fillRect(lx, ly, 4, 3)
+          }
+          break
+        }
+        case 'town-folk': {
+          g.fillStyle = p.cloud
+          g.fillRect(214, 12, 26, 8)
+          g.fillRect(220, 4, 14, 8)
+          // 两栋民居剪影（白墙 + 装饰色屋顶 + 深窗；右侧一栋下移避开道具列）
+          for (const [hx, hw, dy] of [
+            [2, 52, 0],
+            [300, 48, 12],
+          ] as [number, number, number][]) {
+            g.fillStyle = p.cloud
+            g.fillRect(hx, 208 + dy, hw, 40)
+            g.fillStyle = p.decor
+            g.fillRect(hx - 4, 198 + dy, hw + 8, 12)
+            g.fillStyle = p.frame
+            g.fillRect(hx + 8, 220 + dy, 10, 12)
+            g.fillRect(hx + hw - 18, 220 + dy, 10, 12)
+          }
+          g.fillStyle = p.ground
+          g.fillRect(0, 250, W, H - 250)
+          g.fillStyle = p.groundDark
+          for (let y = 258; y < H; y += 12) {
+            const offset = ((y / 12) % 2) * 14
+            for (let x = 2 + offset; x < W; x += 40) g.fillRect(x, y, 12, 2)
+          }
+          break
+        }
+        case 'deep-mines': {
+          g.fillStyle = p.skyAlt
+          g.fillRect(0, 0, W, 12)
+          g.fillStyle = p.groundDark
+          for (let y = 24; y < H; y += 18) {
+            for (let x = 8 + ((y / 18) % 3) * 7; x < W; x += 42) g.fillRect(x, y, 5, 4)
+          }
+          // 岩壁晶簇（decor 紫晶 + cloud 亮点，避开棋盘与道具列）
+          g.fillStyle = p.decor
+          for (const [cx, cy] of [
+            [4, 140],
+            [4, 168],
+            [452, 220],
+            [462, 242],
+            [452, 300],
+            [8, 312],
+          ] as [number, number][]) {
+            g.fillRect(cx, cy, 8, 8)
+            g.fillRect(cx + 2, cy - 6, 4, 6)
+          }
+          g.fillStyle = p.cloud
+          for (const [cx, cy] of [
+            [6, 144],
+            [454, 224],
+            [454, 304],
+          ] as [number, number][]) {
+            g.fillRect(cx, cy, 4, 4)
+          }
+          // 火把（火焰随 time 闪烁，位于棋盘两侧可见带）
+          g.fillStyle = p.ground
+          g.fillRect(0, 250, W, H - 250)
+          g.fillStyle = p.groundDark
+          for (let y = 262; y < H; y += 20) {
+            for (let x = 14 + ((y / 20) % 2) * 10; x < W; x += 46) g.fillRect(x, y, 6, 3)
+          }
+          for (const tx of [6, 462]) {
+            g.fillStyle = p.frame
+            g.fillRect(tx, 234, 4, 16)
+            g.fillStyle = p.select
+            const flicker = Math.floor(time * 8) % 2
+            g.fillRect(tx - 2, 222 + flicker * 2, 8, 12 - flicker * 2)
+          }
+          break
+        }
+        case 'winter-festival': {
+          // 星空（避开左上 HUD 状态箱）
+          g.fillStyle = p.cloud
+          for (const [sx, sy] of [
+            [200, 14],
+            [252, 30],
+            [300, 44],
+            [380, 22],
+            [436, 40],
+            [330, 8],
+            [210, 30],
+            [262, 52],
+          ] as [number, number][]) {
+            g.fillRect(sx, sy, 3, 3)
+          }
+          // 飘雪（随 time 下落）
+          for (let i = 0; i < 12; i++) {
+            const sx = 8 + ((i * 41) % 464)
+            const sy = ((i * 37 + Math.floor(time * 28)) % (H + 20)) - 10
+            g.fillRect(sx, sy, 3, 3)
+            g.fillRect(sx + 1, sy + 3, 2, 2)
+          }
+          // 远处松影（frame 冰蓝木色，位于棋盘下方雪地可见带）
+          g.fillStyle = p.frame
+          g.fillRect(10, 288, 24, 8)
+          g.fillRect(16, 278, 12, 10)
+          g.fillRect(19, 296, 6, 6)
+          g.fillRect(452, 288, 20, 8)
+          g.fillRect(457, 278, 10, 10)
+          g.fillRect(459, 296, 4, 6)
+          // 雪地
+          g.fillStyle = p.ground
+          g.fillRect(0, 244, W, H - 244)
+          g.fillStyle = p.groundDark
+          for (let y = 252; y < H; y += 16) {
+            for (let x = 6 + ((y / 16) % 2) * 14; x < W; x += 52) g.fillRect(x, y, 10, 3)
+          }
+          g.fillStyle = p.decor
+          g.fillRect(300, 252, 8, 8)
+          g.fillRect(306, 246, 4, 6)
+          break
+        }
+      }
     }
 
     const draw = () => {
       if (!ctx) return
       const g = ctx
+      const theme = CHAPTERS[engine.chapter] ?? CHAPTERS[0]
+      const p = theme.palette
       g.imageSmoothingEnabled = false
       g.clearRect(0, 0, W, H)
 
-      // 天空 + 云朵（避开左上状态框）
-      g.fillStyle = LLK_PALETTE.sky
-      g.fillRect(0, 0, W, H)
-      drawCloud(g, 168, 14)
-      drawCloud(g, 330, 30)
-
-      // 草地
-      g.fillStyle = LLK_PALETTE.grass
-      g.fillRect(0, 244, W, H - 244)
-      g.fillStyle = LLK_PALETTE.grassDark
-      for (let y = 254; y < H; y += 14) {
-        const offset = ((y / 14) % 2) * 10
-        for (let x = 6 + offset; x < W; x += 26) g.fillRect(x, y, 6, 3)
-      }
+      drawScene(g, p, theme.id)
 
       // 棋盘：木框 + 面板
-      g.fillStyle = LLK_PALETTE.frame
+      g.fillStyle = p.frame
       g.fillRect(
         BOARD_X - 4,
         BOARD_Y - 4,
         engine.cols * (TILE + GAP) + 6,
         engine.rows * (TILE + GAP) + 6,
       )
-      g.fillStyle = LLK_PALETTE.panel
+      g.fillStyle = p.panel
       g.fillRect(
         BOARD_X - 2,
         BOARD_Y - 2,
@@ -142,8 +331,8 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         engine.rows * (TILE + GAP) + 2,
       )
 
-      // 棋盘网格线（淡棕 1px，替代占位点，更整洁）
-      g.strokeStyle = LLK_PALETTE.panelLine
+      // 棋盘网格线（淡色 1px）
+      g.strokeStyle = p.panelLine
       g.lineWidth = 1
       g.beginPath()
       for (let c = 0; c <= engine.cols; c++) {
@@ -158,16 +347,16 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
       }
       g.stroke()
 
-      // 方块精灵
+      // 元素精灵
       for (let row = 0; row < engine.rows; row++) {
         for (let col = 0; col < engine.cols; col++) {
           const value = engine.grid[row][col]
           if (value === null) continue
-          drawSprite(g, value as ShapeIndex, tileX(col), tileY(row))
-          // 选中高亮（黄框脉冲）
+          drawSprite(g, value, tileX(col), tileY(row))
+          // 选中高亮（主题色框脉冲）
           if (engine.selected && engine.selected.x === col && engine.selected.y === row) {
             const a = 0.5 + 0.5 * Math.sin(time * 6)
-            g.strokeStyle = LLK_PALETTE.select
+            g.strokeStyle = p.select
             g.globalAlpha = Math.max(0.35, a)
             g.lineWidth = 2
             g.strokeRect(tileX(col) - 2, tileY(row) - 2, TILE + 4, TILE + 4)
@@ -180,7 +369,7 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
               (hintPair[1].x === col && hintPair[1].y === row))
           ) {
             const a = 0.5 + 0.5 * Math.sin(time * 5)
-            g.strokeStyle = LLK_PALETTE.hint
+            g.strokeStyle = p.hint
             g.globalAlpha = Math.max(0.35, a)
             g.lineWidth = 2
             g.strokeRect(tileX(col) - 2, tileY(row) - 2, TILE + 4, TILE + 4)
@@ -189,33 +378,36 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         }
       }
 
-      // 匹配连接线（像素折线 + 端点方块）
+      // 匹配连接线：1px 深色衬底 + 3px 主题色（DESIGN.md §10 缺陷 #6），含起终点
       if (matchFx && matchFx.t < 0.35) {
         const alpha = 1 - matchFx.t / 0.35
-        g.strokeStyle = LLK_PALETTE.line
-        g.lineWidth = 3
+        const pts = matchFx.path.map((pt) => ({
+          x: tileX(pt.x) + TILE / 2,
+          y: tileY(pt.y) + TILE / 2,
+        }))
         g.globalAlpha = alpha
+        g.lineCap = 'butt'
+        g.strokeStyle = p.lineDark
+        g.lineWidth = 5
         g.beginPath()
-        matchFx.path.forEach((p, i) => {
-          const cx = tileX(p.x) + TILE / 2
-          const cy = tileY(p.y) + TILE / 2
-          if (i === 0) g.moveTo(cx, cy)
-          else g.lineTo(cx, cy)
-        })
+        pts.forEach((pt, i) => (i === 0 ? g.moveTo(pt.x, pt.y) : g.lineTo(pt.x, pt.y)))
         g.stroke()
-        g.fillStyle = LLK_PALETTE.sparkle
-        const first = matchFx.path[0]
-        const lastP = matchFx.path[matchFx.path.length - 1]
-        g.fillRect(tileX(first.x) + TILE / 2 - 2, tileY(first.y) + TILE / 2 - 2, 4, 4)
-        g.fillRect(tileX(lastP.x) + TILE / 2 - 2, tileY(lastP.y) + TILE / 2 - 2, 4, 4)
+        g.strokeStyle = p.line
+        g.lineWidth = 3
+        g.beginPath()
+        pts.forEach((pt, i) => (i === 0 ? g.moveTo(pt.x, pt.y) : g.lineTo(pt.x, pt.y)))
+        g.stroke()
+        g.fillStyle = p.sparkle
+        g.fillRect(pts[0].x - 2, pts[0].y - 2, 4, 4)
+        g.fillRect(pts[pts.length - 1].x - 2, pts[pts.length - 1].y - 2, 4, 4)
         g.globalAlpha = 1
       }
 
       // 星屑粒子（方块）
-      particles.forEach((p) => {
-        g.globalAlpha = Math.max(0, p.life / 0.6)
-        g.fillStyle = LLK_PALETTE.sparkle
-        g.fillRect(p.x - 2, p.y - 2, 4, 4)
+      particles.forEach((pt) => {
+        g.globalAlpha = Math.max(0, pt.life / 0.6)
+        g.fillStyle = p.sparkle
+        g.fillRect(pt.x - 2, pt.y - 2, 4, 4)
       })
       g.globalAlpha = 1
 
@@ -224,47 +416,65 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
       const boxY = 8
       const boxW = 170
       const boxH = 58
-      g.fillStyle = LLK_PALETTE.uiBg
+      g.fillStyle = p.uiBg
       g.fillRect(boxX, boxY, boxW, boxH)
-      g.strokeStyle = LLK_PALETTE.uiBorder
+      g.strokeStyle = p.uiBorder
       g.lineWidth = 2
       g.strokeRect(boxX + 1, boxY + 1, boxW - 2, boxH - 2)
       g.textBaseline = 'top'
       g.textAlign = 'left'
       g.font = `8px ${PIXEL_FONT}`
-      g.fillStyle = LLK_PALETTE.text
+      g.fillStyle = p.text
       g.fillText(`${t('level')} ${engine.level}`, boxX + 8, boxY + 8)
       const secs = Math.max(0, Math.ceil(engine.timeLeftSec))
       const timeStr = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`
-      g.fillStyle = secs <= 10 ? LLK_PALETTE.timeWarn : LLK_PALETTE.text
+      g.fillStyle = secs <= 10 ? p.timeWarn : p.text
       g.fillText(`${t('time')} ${timeStr}`, boxX + 8, boxY + 26)
-      g.fillStyle = LLK_PALETTE.text
+      g.fillStyle = p.text
       g.fillText(`${t('score')} ${engine.score}`, boxX + 8, boxY + 44)
 
       // 连击提示（带 1px 阴影提高可读性）
-      if (engine.combo >= 2 && engine.phase === 'playing') {
-        g.fillStyle = LLK_PALETTE.uiShadow
+      if (engine.combo >= 2 && engine.phase === 'playing' && !engine.frozen) {
+        g.fillStyle = p.uiShadow
         g.fillText(`${t('combo')} x${engine.combo}`, 21, 301)
-        g.fillStyle = LLK_PALETTE.select
+        g.fillStyle = p.select
         g.fillText(`${t('combo')} x${engine.combo}`, 20, 300)
       }
 
-      // 自动洗牌提示
+      // 横幅提示（底部中央，避开 HUD/棋盘，DESIGN.md §10 缺陷 #5）
       if (toastT > 0) {
         const alpha = Math.min(1, toastT / 0.4)
         g.globalAlpha = alpha
-        g.fillStyle = LLK_PALETTE.toastBg
-        g.fillRect(W / 2 - 80, 20, 160, 26)
-        g.strokeStyle = LLK_PALETTE.uiBorder
+        g.fillStyle = p.toastBg
+        g.fillRect(W / 2 - 80, 318, 160, 26)
+        g.strokeStyle = p.uiBorder
         g.lineWidth = 2
-        g.strokeRect(W / 2 - 80, 20, 160, 26)
-        g.fillStyle = LLK_PALETTE.text
+        g.strokeRect(W / 2 - 80, 318, 160, 26)
+        g.fillStyle = p.text
         g.font = `8px ${PIXEL_FONT}`
         g.textAlign = 'center'
-        g.fillText(toastText, W / 2, 29)
+        g.fillText(toastText, W / 2, 327)
         g.textAlign = 'left'
         g.globalAlpha = 1
       }
+    }
+
+    /* —— 主题 CSS 变量（DOM 道具/浮层随大关配色） —— */
+
+    const applyTheme = (rootEl: HTMLDivElement, p: ChapterPalette) => {
+      const vars: Record<string, string> = {
+        '--llk-ui-bg': p.uiBg,
+        '--llk-ui-border': p.uiBorder,
+        '--llk-ui-shadow': p.uiShadow,
+        '--llk-text': p.text,
+        '--llk-sub': p.subText,
+        '--llk-btn-bg': p.toastBg,
+        '--llk-overlay': p.overlay,
+        '--llk-primary-bg': p.frame,
+        // 主按钮：木框底 + 主题连线色文字（DESIGN.md §9 主按钮规则）
+        '--llk-primary-text': p.line,
+      }
+      for (const [k, v] of Object.entries(vars)) rootEl.style.setProperty(k, v)
     }
 
     /* —— 浮层与道具 —— */
@@ -322,7 +532,7 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         panelEl.append(mkBtn(t('retry'), () => engine.startRun(), true))
         panelEl.append(mkBtn(t('toMenu'), () => engine.toMenu()))
       } else if (engine.frozen) {
-        h.textContent = fmt('levelClear', engine.level)
+        h.textContent = pickLang(S.levelClear, langRef.current).replace('{n}', String(engine.level))
         panelEl.append(h, row(t('timeBonus'), `+${Math.ceil(engine.timeLeftSec) * 5}`))
         panelEl.append(mkBtn(t('nextLevel'), () => engine.nextLevel(), true))
       }
@@ -367,7 +577,7 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
             if (engine.phase === 'playing') engine.pause()
             else if (engine.phase === 'paused') engine.resume()
           },
-          engine.phase !== 'playing' && engine.phase !== 'paused',
+          (engine.phase !== 'playing' && engine.phase !== 'paused') || engine.frozen,
         ),
       )
     }
@@ -378,8 +588,30 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         callbacks.onScore(engine.score)
       }
       if (engine.phase !== lastPhase) {
+        const prev = lastPhase
         lastPhase = engine.phase
         callbacks.onPhase?.(engine.phase)
+        // 从 menu/over 开局进入 playing：显示当前大关横幅（含首关第 1 大关）
+        if (engine.phase === 'playing' && (prev === 'menu' || prev === 'over')) {
+          // 同关卡重开/重试时 level 可能不变：此处统一清残留（DESIGN.md §10 缺陷 #2）
+          hintPair = null
+          matchFx = null
+          toastChapter()
+        }
+      }
+      // 关卡变化：清提示高亮与连线特效（DESIGN.md §10 缺陷 #2），防止残影落于新棋盘
+      if (engine.level !== lastLevel) {
+        const chapterChanged = engine.chapter !== lastChapter
+        lastLevel = engine.level
+        hintPair = null
+        matchFx = null
+        // 跨大关推进：大关横幅
+        if (chapterChanged) toastChapter()
+      }
+      // 大关变化：换主题配色
+      if (engine.chapter !== lastChapter) {
+        lastChapter = engine.chapter
+        if (root) applyTheme(root, CHAPTERS[engine.chapter].palette)
       }
       const key = uiKey()
       if (key !== lastUiKey) {
@@ -474,6 +706,14 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         }
         return
       }
+      // playing：过关冻结面板支持回车/空格进入下一关（DESIGN.md §10 缺陷 #4）
+      if (engine.frozen) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          engine.nextLevel()
+        }
+        return
+      }
       if (event.key.toLowerCase() === 'p') {
         event.preventDefault()
         engine.pause()
@@ -512,6 +752,7 @@ export const LianliankanGame: GameComponent = ({ onReady }) => {
         overlayEl.appendChild(panelEl)
         root.appendChild(overlayEl)
         el.appendChild(root)
+        applyTheme(root, CHAPTERS[0].palette)
         canvas.addEventListener('pointerdown', onPointerDown)
         window.addEventListener('keydown', onKeyDown)
         callbacks.onPhase?.(engine.phase)
