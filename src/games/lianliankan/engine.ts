@@ -1,7 +1,8 @@
 // ============================================================
-// 连连看：纯逻辑引擎（无 DOM，可注入随机源，node 直跑可测）
-// 唯一出处：同目录 DESIGN.md v0.1；渲染与输入在 Game.tsx（决策 #25）
+// 星露谷连连看：纯逻辑引擎（无 DOM，可注入随机源，node 直跑可测）
+// 唯一出处：同目录 DESIGN.md v0.6；渲染与输入在 Game.tsx（决策 #25）
 // ============================================================
+import { CHAPTERS } from './themes.ts'
 
 export type LianPhase = 'menu' | 'playing' | 'paused' | 'over'
 
@@ -11,19 +12,26 @@ export interface Point {
 }
 
 export interface LevelConfig {
-  shapes: number
+  /** 本关元素数（取自当前大关元素集前 N 种） */
+  items: number
   timeSec: number
 }
 
-export const LEVELS: LevelConfig[] = [
-  { shapes: 4, timeSec: 150 },
-  { shapes: 5, timeSec: 135 },
-  { shapes: 6, timeSec: 120 },
-  { shapes: 7, timeSec: 105 },
-  { shapes: 7, timeSec: 90 },
-]
+export const LEVELS_PER_CHAPTER = 3
+export const CHAPTER_COUNT = CHAPTERS.length
+export const TOTAL_LEVELS = LEVELS_PER_CHAPTER * CHAPTER_COUNT // 18
 
-export const TOTAL_LEVELS = LEVELS.length
+/** 第 n 关（1..TOTAL_LEVELS）：元素数 4/5/6 循环，时限 150 - 3×(n-1) 秒（DESIGN.md §6） */
+export const LEVELS: LevelConfig[] = Array.from({ length: TOTAL_LEVELS }, (_, i) => ({
+  items: 4 + (i % LEVELS_PER_CHAPTER),
+  timeSec: 150 - i * 3,
+}))
+
+/** 大关序号（0 起）：第 n 关属于第 ⌊(n-1)/3⌋ 大关（DESIGN.md §6） */
+export function chapterOf(level: number): number {
+  return Math.floor((level - 1) / LEVELS_PER_CHAPTER)
+}
+
 export const HINTS_PER_LEVEL = 3
 export const SHUFFLES_PER_LEVEL = 3
 export const MATCH_BASE = 100
@@ -34,6 +42,7 @@ export type TapResult =
   | { kind: 'selected' | 'deselected' | 'no-match' | 'blocked' }
   | {
       kind: 'matched'
+      /** 含起终点的连线路径（首点=先选元素，末点=后选元素；DESIGN.md §10 缺陷 #1） */
       path: Point[]
       levelClear: boolean
       victory: boolean
@@ -43,7 +52,7 @@ export type TapResult =
 
 /**
  * 寻路：a → b，路径只能经过空格（或终点 b），拐角 ≤ 2。
- * 返回含起终点中间格的路径（首点为 a 之后第一格，末点为 b），不可达返回 null。
+ * 返回含起终点中间格的路径（首点为 a 之后第一格，末点为 b，不含 a），不可达返回 null。
  */
 export function findPath(
   grid: (number | null)[][],
@@ -118,6 +127,8 @@ export class LianliankanEngine {
   readonly rows: number
   grid: (number | null)[][] = []
   level = 1
+  /** 当前大关序号（0 起，loadLevel 时更新） */
+  chapter = 0
   score = 0
   combo = 0
   timeLeftSec = 0
@@ -158,7 +169,8 @@ export class LianliankanEngine {
   }
 
   pause() {
-    if (this.phase === 'playing') this.phase = 'paused'
+    // 过关冻结期间不响应暂停：防止壳层暂停键把冻结结算面板切成暂停面板（DESIGN.md §10 缺陷 #7）
+    if (this.phase === 'playing' && !this.frozen) this.phase = 'paused'
   }
 
   resume() {
@@ -179,26 +191,29 @@ export class LianliankanEngine {
 
   loadLevel(n: number) {
     this.level = n
+    this.chapter = chapterOf(n)
     const cfg = LEVELS[n - 1]
     this.timeLeftSec = cfg.timeSec
     this.hintsLeft = HINTS_PER_LEVEL
     this.shufflesLeft = SHUFFLES_PER_LEVEL
     this.selected = null
     this.frozen = false
-    this.grid = this.generateBoard(cfg.shapes)
+    const chapterSprites = CHAPTERS[this.chapter]?.sprites ?? [0, 1, 2, 3, 4, 5]
+    this.grid = this.generateBoard(chapterSprites, cfg.items)
     // 开局死局自动洗牌（免费，循环至有解）
     this.ensureSolvable()
   }
 
-  generateBoard(shapeCount: number): (number | null)[][] {
+  /** 棋盘值 = 精灵图鉴 id（全局），findPath 只依赖值相等 */
+  generateBoard(items: number[], count: number): (number | null)[][] {
     const pairs = (this.cols * this.rows) / 2
     const cells: number[] = []
-    const base = Math.floor(pairs / shapeCount)
-    let rem = pairs - base * shapeCount
-    for (let s = 0; s < shapeCount; s++) {
-      const count = base + (rem > 0 ? 1 : 0)
+    const base = Math.floor(pairs / count)
+    let rem = pairs - base * count
+    for (let s = 0; s < count; s++) {
+      const c = base + (rem > 0 ? 1 : 0)
       if (rem > 0) rem--
-      for (let i = 0; i < count; i++) cells.push(s, s)
+      for (let i = 0; i < c; i++) cells.push(items[s], items[s])
     }
     for (let i = cells.length - 1; i > 0; i--) {
       const j = Math.floor(this.random() * (i + 1))
@@ -271,7 +286,8 @@ export class LianliankanEngine {
       this.ensureSolvable()
       autoShuffled = true
     }
-    return { kind: 'matched', path, levelClear, victory, bonus, autoShuffled }
+    // 缺陷 #1 修复：连线路径补齐起点（首点元素 → 中间格 → 末点元素）
+    return { kind: 'matched', path: [a, ...path], levelClear, victory, bonus, autoShuffled }
   }
 
   /** 过关结算后进入下一关 */
@@ -311,7 +327,7 @@ export class LianliankanEngine {
     return hint
   }
 
-  /** 洗牌：重排剩余图形；cost=false 为死局自动洗牌（免费） */
+  /** 洗牌：重排剩余元素；cost=false 为死局自动洗牌（免费） */
   shuffleRemaining(cost = true): boolean {
     const cells: number[] = []
     for (let y = 0; y < this.rows; y++) {
