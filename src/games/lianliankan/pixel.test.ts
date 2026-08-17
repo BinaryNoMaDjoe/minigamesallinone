@@ -1,9 +1,9 @@
 // ============================================================
-// 连连看像素精灵冒烟测试（决策 #25）
+// 星露谷连连看像素精灵冒烟测试（决策 #25）
 // 运行方式：node src/games/lianliankan/pixel.test.ts
-// 覆盖：7 个精灵尺寸/字符集/非空/面部像素存在
+// 覆盖：36 个精灵尺寸/字符集/非空/面部像素存在（DESIGN.md v0.6 §4.2）
 // ============================================================
-import { getSprite, SPRITE_SIZE } from './pixel.ts'
+import { getSprite, SPRITE_COUNT, SPRITE_SIZE } from './pixel.ts'
 
 let passed = 0
 let failed = 0
@@ -17,11 +17,11 @@ function assert(cond: boolean, name: string) {
   }
 }
 
-const CHARS = new Set(['.', 'K', 'M', 'H', 'S', 'E', 'B'])
+const CHARS = new Set(['.', 'K', 'M', 'H', 'S', 'E', 'B', 'A', 'L'])
 
-for (let shape = 0; shape < 7; shape++) {
-  const sprite = getSprite(shape as 0 | 1 | 2 | 3 | 4 | 5 | 6)
-  assert(sprite.length === SPRITE_SIZE, `图形 ${shape}：行数 = ${SPRITE_SIZE}`)
+for (let id = 0; id < SPRITE_COUNT; id++) {
+  const sprite = getSprite(id)
+  assert(sprite.length === SPRITE_SIZE, `精灵 ${id}：行数 = ${SPRITE_SIZE}`)
   let allColsOk = true
   let charsOk = true
   let filled = 0
@@ -36,11 +36,11 @@ for (let shape = 0; shape < 7; shape++) {
       if (ch === 'B') blush++
     }
   }
-  assert(allColsOk, `图形 ${shape}：列数 = ${SPRITE_SIZE}`)
-  assert(charsOk, `图形 ${shape}：字符集合法`)
-  assert(filled > 30, `图形 ${shape}：非空像素 > 30（实际 ${filled}）`)
-  assert(eyes >= 1, `图形 ${shape}：含眼睛像素`)
-  assert(blush >= 1, `图形 ${shape}：含腮红像素`)
+  assert(allColsOk, `精灵 ${id}：列数 = ${SPRITE_SIZE}`)
+  assert(charsOk, `精灵 ${id}：字符集合法`)
+  assert(filled > 30, `精灵 ${id}：非空像素 > 30（实际 ${filled}）`)
+  assert(eyes >= 1, `精灵 ${id}：含眼睛像素`)
+  assert(blush >= 1, `精灵 ${id}：含腮红像素`)
 }
 
 console.log(`\n结果：${passed} 通过，${failed} 失败`)
